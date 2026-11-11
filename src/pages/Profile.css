@@ -1,0 +1,59 @@
+.profile {
+  padding: 30px; 
+  color: #F8FAFC; 
+}
+
+.profile h1 {
+  margin-bottom: 5px; 
+}
+
+.profile  p {
+  color: #94A3B8;
+  margin-bottom: 30px;
+}
+
+.pcard {
+  background-color: #21334D; 
+  padding: 25px;
+  border-radius: 10px; 
+  max-width: 600px;
+}
+
+.pcard h2 {
+  margin-top: 0; 
+  margin-bottom: 25px; 
+}
+
+.pcard p {
+  margin-bottom: 20px; 
+  color: #CBD5E1; 
+  
+}
+
+.pcard button {
+  padding: 10px 18px;
+  background-color: #3B82F6; 
+  color: white; 
+  border: none; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  margin-right: 10px;
+}
+
+.changepswd {
+  background-color: #475569 !important;
+}
+
+.logoutbtn{
+  background-color: #21334D;
+  border: none;
+  color:white;
+  border-radius: 5px;
+  margin-top: 30px;
+  padding: 15px;
+
+}
+.logoutbtn:hover{
+  cursor: pointer;
+  background-color: #3b62a2;
+}
