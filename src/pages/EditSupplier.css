@@ -1,0 +1,48 @@
+
+.edit-supplier {
+  padding: 30px; 
+  color: #F8FAFC; 
+}
+
+.edit-supplier p {
+  color: #94A3B8; 
+  margin-top: 8px; 
+}
+
+.edit-supplier form {
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+  max-width: 450px; 
+  margin-top: 30px; 
+  padding: 25px; 
+  background-color: #21334D;
+  border-radius: 8px; 
+}
+
+.edit-supplier label {
+  color: #F8FAFC; 
+}
+
+.edit-supplier input {
+  padding: 12px;
+  border: 1px solid #2B405D; 
+  border-radius: 6px; 
+  background-color: #111D30; 
+  color: #F8FAFC; 
+}
+
+.edit-supplier-buttons {
+  display: flex; 
+  gap: 10px; 
+  margin-top: 12px;
+}
+
+.edit-supplier-buttons button {
+  padding: 12px 18px; 
+  border: none; 
+  border-radius: 6px; 
+  background-color: #3B82F6; 
+  color: white; 
+  cursor: pointer; 
+}

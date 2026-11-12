@@ -1,26 +1,40 @@
-function Table({products = []}){
-  return(
+
+import "./Table.css";
+import { Pencil, Trash2 } from "lucide-react";
+
+function Table({ data = [], columns = [], onEdit, onDelete }) {
+  return (
     <table>
       <thead>
         <tr>
-          <th>Produit</th>
-          <th>Category</th>
-          <th>Quantity</th>
-          <th>Price</th>
+          {columns.map((column) => (
+            <th key={column.key}>{column.title}</th>
+          ))}
+          <th>Actions</th>
         </tr>
       </thead>
 
       <tbody>
-        {products.map((product)=> (
-          <tr key={product.id}>
-            <td>{product.name}</td>
-            <td>{product.category}</td>
-            <td>{product.quantity}</td>
-            <td>{product.price} DH</td>
+        {data.map((item) => (
+          <tr key={item.id}>
+            {columns.map((column) => (
+              <td key={column.key}>{item[column.key]}</td>
+            ))}
+
+            <td>
+              <button onClick={() => onEdit(item)}>
+                <Pencil size={18} />
+              </button>
+
+              <button onClick={() => onDelete(item.id)}>
+                <Trash2 size={18} />
+              </button>
+            </td>
           </tr>
         ))}
       </tbody>
     </table>
   );
 }
+
 export default Table;
