@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-
+import EditProfile from "./pages/EditProfile";
 import Products from "./pages/Products";
 import Profile from "./pages/Profile";
 import EditProduct from "./pages/EditProduct";
@@ -10,8 +10,14 @@ import Suppliers from "./pages/Suppliers";
 import EditSupplier from "./pages/EditSupplier";
 
 function App() {
-  const [selected, setSelected] = useState("Products");
+  const [profile, setProfile] = useState({
+    name: "Your Name",
+    email: "your@email.com",
+    username: "username",
+    role: "Administrateur"
+  });
 
+  const [selected, setSelected] = useState("Products");
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -42,6 +48,11 @@ function App() {
       productsCount: 18
     }
   ]);
+
+  function handleSaveProfile(updatedProfile) {
+    setProfile(updatedProfile);
+    setSelected("Profile");
+  }
 
   function handleSaveSupplier(updatedSupplier) {
     setSuppliers(
@@ -76,7 +87,19 @@ function App() {
       )}
 
       {selected === "Profile" && (
-        <Profile selected={selected} setSelected={setSelected} />
+        <Profile
+          selected={selected}
+          setSelected={setSelected}
+          profile={profile}
+        />
+      )}
+
+      {selected === "EditProfile" && (
+        <EditProfile
+          profile={profile}
+          setSelected={setSelected}
+          onSave={handleSaveProfile}
+        />
       )}
 
       {selected === "EditProduct" && (

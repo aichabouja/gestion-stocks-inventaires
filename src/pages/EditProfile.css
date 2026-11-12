@@ -1,0 +1,35 @@
+
+.edit-profile {
+  padding: 30px;
+  color: #F8FAFC;
+}
+
+.edit-profile form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 450px;
+  margin-top: 25px;
+}
+
+.edit-profile input {
+  padding: 12px;
+  border: 1px solid #2B405D;
+  border-radius: 6px;
+  background-color: #21334D;
+  color: #F8FAFC;
+}
+
+.edit-profile-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-profile-buttons button {
+  padding: 12px;
+  background-color: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
