@@ -1,0 +1,101 @@
+
+.inventory {
+  flex: 1;
+  padding: 35px;
+  color: #F8FAFC;
+}
+
+.inventory .header {
+  margin-bottom: 25px;
+}
+
+.inventory .header h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.inventory .header p {
+  color: #94A3B8;
+}
+
+.inventoryinfo {
+  background-color: #21334D;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #CBD5E1;
+}
+
+.inventorytable {
+  background-color: #21334D;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.inventorytable table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inventorytable th,
+.inventorytable td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #344966;
+}
+
+.inventorytable th {
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.inventorytable input {
+  width: 130px;
+  padding: 9px;
+  background-color: #17263C;
+  border: 1px solid #344966;
+  border-radius: 6px;
+  color: #F8FAFC;
+  outline: none;
+}
+
+.inventorytable input:focus {
+  border-color: #3B82F6;
+}
+
+.inventorytable .negative {
+  color: #F87171;
+  font-weight: bold;
+}
+
+.inventorytable .positive {
+  color: #4ADE80;
+  font-weight: bold;
+}
+
+.inventorybuttons {
+  margin-top: 20px;
+}
+
+.inventorybuttons button {
+  padding: 11px 20px;
+  background-color: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.inventorybuttons button:hover {
+  background-color: #2563EB;
+}
+
+.inventory .empty {
+  background-color: #21334D;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 20px;
+}

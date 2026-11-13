@@ -9,6 +9,7 @@ import EditCategory from "./pages/EditCategory";
 import Suppliers from "./pages/Suppliers";
 import EditSupplier from "./pages/EditSupplier";
 import StockMovements from "./pages/StockMovements";
+import Inventory from "./pages/Inventory";
 function App() {
   const [profile, setProfile] = useState({
     name: "Your Name",
@@ -156,6 +157,12 @@ function App() {
       )}
       {selected === "StockMovements" && (
         <StockMovements
+          selected={selected}
+          setSelected={setSelected}
+        />
+      )}
+      {selected === "Inventory" && (
+        <Inventory
           selected={selected}
           setSelected={setSelected}
         />
