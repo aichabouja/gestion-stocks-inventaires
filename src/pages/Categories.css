@@ -1,0 +1,59 @@
+
+.categoryform {
+  background-color: #21334D;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 600px;
+}
+
+.categoryform form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.categoryform label {
+  color: #F8FAFC;
+  font-weight: 500;
+}
+
+.categoryform input {
+  padding: 12px;
+  background-color: #17263C;
+  border: 1px solid #344966;
+  border-radius: 6px;
+  color: #F8FAFC;
+  font-size: 14px;
+  outline: none;
+}
+
+.categoryform input:focus {
+  border-color: #3B82F6;
+}
+
+.categorybuttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.categorybuttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background-color: #3B82F6;
+  color: white;
+  cursor: pointer;
+}
+
+.categorybuttons button:hover {
+  background-color: #2563EB;
+}
+
+.categorybuttons button:last-child {
+  background-color: #475569;
+}
+
+.categorybuttons button:last-child:hover {
+  background-color: #64748B;
+}

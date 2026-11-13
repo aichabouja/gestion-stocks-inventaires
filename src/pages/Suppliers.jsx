@@ -3,7 +3,7 @@ import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Table from "../components/Table";
-
+import Searchbar from "../components/Searchbar";
 
 const columns = [
   { title: "Nom du fournisseur", key: "name" },
@@ -21,6 +21,7 @@ function Suppliers({
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [products, setProducts] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   function handleAdd() {
     if (name.trim() === "" || products.trim() === "") {
@@ -60,6 +61,11 @@ function Suppliers({
     setName("");
     setProducts("");
   }
+
+  const filteredSuppliers = suppliers.filter((supplier) =>
+    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.products.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <>
@@ -105,10 +111,16 @@ function Suppliers({
             </div>
           )}
 
+          <Searchbar
+            placeholder="Rechercher un fournisseur..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+          />
+
           {suppliers.length > 0 ? (
             <div className="suppliers-table">
               <Table
-                data={suppliers}
+                data={filteredSuppliers}
                 columns={columns}
                 onEdit={onEditSupplier}
                 onDelete={handleDelete}

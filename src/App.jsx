@@ -123,7 +123,7 @@ function App() {
         />
       )}
 
-      {selected === "EditCategory" && (
+      {selected === "EditCategory" && editingCategory && (
         <EditCategory
           category={editingCategory}
           setSelected={setSelected}
@@ -159,3 +159,4 @@ function App() {
 }
 
 export default App;
+

@@ -1,6 +1,9 @@
-function Searchbar({placeholder, value, onChange}){
-  return(
+import "./Searchbar.css";
+
+function SearchBar({ placeholder, value, onChange }) {
+  return (
     <input
+      className="searchbar"
       type="text"
       placeholder={placeholder}
       value={value}
@@ -9,4 +12,4 @@ function Searchbar({placeholder, value, onChange}){
   );
 }
 
-export default Searchbar;
+export default SearchBar;

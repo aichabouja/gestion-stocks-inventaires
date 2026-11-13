@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import Table from "../components/Table";
 import EditProduct from "./EditProduct";
+import Searchbar from "../components/Searchbar";
 import "./Products.css";
 
 const columns = [
@@ -20,24 +21,38 @@ function Products({ selected, setSelected }) {
   ]);
 
   const [editingProduct, setEditingProduct] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   function handleSave(updatedProduct) {
-    setProducts(products.map((product) =>
-      product.id === updatedProduct.id ? updatedProduct : product
-    ));
+    if (updatedProduct.id) {
+      setProducts(products.map((product) =>
+        product.id === updatedProduct.id ? updatedProduct : product
+      ));
+    } else {
+      setProducts([...products, {
+        ...updatedProduct,
+        id: Date.now()
+      }]);
+    }
 
     setEditingProduct(null);
   }
+
+  function handleDelete(id) {
+    setProducts(products.filter((product) => product.id !== id));
+  }
+
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <>
       <Navbar />
 
       <div className="content">
-        <Sidebar
-          selected={selected}
-          setSelected={setSelected}
-        />
+        <Sidebar selected={selected} setSelected={setSelected} />
 
         <main>
           {editingProduct ? (
@@ -54,15 +69,30 @@ function Products({ selected, setSelected }) {
                   <p>Gérez vos produits ici</p>
                 </div>
 
-                <button>Ajouter un produit</button>
+                <button
+                  onClick={() => setEditingProduct({
+                    name: "",
+                    category: "",
+                    price: ""
+                  })}
+                >
+                  Ajouter un produit
+                </button>
               </div>
+
+              <Searchbar
+                placeholder="Rechercher un produit..."
+                value={searchTerm}
+                onChange={setSearchTerm}
+              />
 
               {products.length > 0 ? (
                 <div className="products-table">
                   <Table
-                    data={products}
+                    data={filteredProducts}
                     columns={columns}
                     onEdit={setEditingProduct}
+                    onDelete={handleDelete}
                   />
                 </div>
               ) : (
@@ -80,3 +110,4 @@ function Products({ selected, setSelected }) {
 }
 
 export default Products;
+
