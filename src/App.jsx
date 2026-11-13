@@ -8,7 +8,7 @@ import Categories from "./pages/Categories";
 import EditCategory from "./pages/EditCategory";
 import Suppliers from "./pages/Suppliers";
 import EditSupplier from "./pages/EditSupplier";
-
+import StockMovements from "./pages/StockMovements";
 function App() {
   const [profile, setProfile] = useState({
     name: "Your Name",
@@ -152,6 +152,12 @@ function App() {
           setSelected={setSelected}
           onCancel={() => setSelected("Suppliers")}
           onSave={handleSaveSupplier}
+        />
+      )}
+      {selected === "StockMovements" && (
+        <StockMovements
+          selected={selected}
+          setSelected={setSelected}
         />
       )}
     </>

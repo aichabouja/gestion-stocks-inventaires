@@ -6,7 +6,7 @@ function Sidebar({ selected, setSelected }) {
     { name: "Products", label: "Produits" },
     { name: "Categories", label: "Catégories" },
     { name: "Suppliers", label: "Fournisseurs" },
-    { name: "Stock Movements", label: "Mouvements de stock" },
+    { name: "StockMovements", label: "Mouvements de stock" },
     { name: "Inventory", label: "Inventaire" },
     { name: "Dashboard", label: "Tableau de bord" },
     { name: "Statistics", label: "Statistiques" }
