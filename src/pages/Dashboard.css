@@ -1,0 +1,69 @@
+
+.dashboard {
+  flex: 1;
+  padding: 35px;
+  color: #F8FAFC;
+}
+
+.dashboard .header {
+  margin-bottom: 30px;
+}
+
+.dashboard .header h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.dashboard .header p {
+  color: #94A3B8;
+}
+
+.dashboardcards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.dashboardcard {
+  background-color: #21334D;
+  padding: 25px;
+  border-radius: 10px;
+}
+
+.dashboardcard p {
+  color: #94A3B8;
+  margin-bottom: 15px;
+}
+
+.dashboardcard h2 {
+  font-size: 28px;
+}
+
+.recentmovements {
+  background-color: #21334D;
+  padding: 25px;
+  border-radius: 10px;
+}
+
+.recentmovements h2 {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.recentmovements table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.recentmovements th,
+.recentmovements td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #344966;
+}
+
+.recentmovements th {
+  color: #94A3B8;
+  font-weight: 500;
+}
