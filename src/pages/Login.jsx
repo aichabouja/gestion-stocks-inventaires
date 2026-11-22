@@ -1,34 +1,57 @@
-import Input from "../components/Input";
-import Button from "../components/button";  
-import Navbar from "../components/Navbar";
-import "./Login.css"
-function Login(){
-  return (
 
+import { useState } from "react";
+import Navbar from "../components/Navbar";
+import { useAuth } from "../context/useAuth";
+import "./Login.css";
+
+function Login() {
+  const { login } = useAuth();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    const success = login(username, password);
+
+    if (!success) {
+      setError("Username or password is incorrect.");
+    }
+  }
+
+  return (
     <div className="loginPage">
       <Navbar />
+
       <div className="login">
-       
-        <form>
+        <form onSubmit={handleSubmit}>
           <h2>Login to your account</h2>
-          <Input
-            label="Username or Email"
+
+          <label>Username or Email</label>
+          <input
             type="text"
             placeholder="Enter your username or email"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
-          <Input
-            label="Password"
+
+          <label>Password</label>
+          <input
             type="password"
             placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
-          <Button text="Login" type="submit" />
-        </form>
 
+          {error && <p className="loginerror">{error}</p>}
+
+          <button type="submit">Login</button>
+        </form>
       </div>
     </div>
-
   );
-
 }
 
 export default Login;

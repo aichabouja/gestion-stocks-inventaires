@@ -10,29 +10,36 @@ import "./Products.css";
 const columns = [
   { title: "Nom", key: "name" },
   { title: "Catégorie", key: "category" },
-  { title: "Prix (DH)", key: "price" }
+  { title: "Prix (DH)", key: "price" },
+  { title: "Stock", key: "stock" }
 ];
 
-function Products({ selected, setSelected }) {
-  const [products, setProducts] = useState([
-    { id: 1, name: "HP Pavilion 15", category: "PC portables", price: 6500 },
-    { id: 2, name: "Logitech G502", category: "Souris", price: 450 },
-    { id: 3, name: "HyperX Cloud II", category: "Casques", price: 850 }
-  ]);
-
+function Products({ selected, setSelected, products, setProducts }) {
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   function handleSave(updatedProduct) {
     if (updatedProduct.id) {
       setProducts(products.map((product) =>
-        product.id === updatedProduct.id ? updatedProduct : product
+        product.id === updatedProduct.id
+          ? {
+              ...product,
+              ...updatedProduct,
+              stock: product.stock,
+              realStock: product.realStock
+            }
+          : product
       ));
     } else {
-      setProducts([...products, {
-        ...updatedProduct,
-        id: Date.now()
-      }]);
+      setProducts([
+        ...products,
+        {
+          ...updatedProduct,
+          id: Date.now(),
+          stock: 0,
+          realStock: ""
+        }
+      ]);
     }
 
     setEditingProduct(null);
@@ -110,4 +117,3 @@ function Products({ selected, setSelected }) {
 }
 
 export default Products;
-
