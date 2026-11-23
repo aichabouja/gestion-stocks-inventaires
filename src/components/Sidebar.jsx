@@ -1,3 +1,4 @@
+
 import "./Sidebar.css";
 
 function Sidebar({ selected, setSelected }) {
@@ -9,7 +10,8 @@ function Sidebar({ selected, setSelected }) {
     { name: "StockMovements", label: "Mouvements de stock" },
     { name: "Inventory", label: "Inventaire" },
     { name: "Dashboard", label: "Tableau de bord" },
-    { name: "Statistics", label: "Statistiques" }
+    { name: "Statistics", label: "Statistiques" },
+    { name: "Utilisateurs", label: "Utilisateurs" }
   ];
 
   return (
@@ -22,7 +24,6 @@ function Sidebar({ selected, setSelected }) {
             onClick={() => setSelected(item.name)}
           >
             {item.label}
-          
           </li>
         ))}
       </ul>

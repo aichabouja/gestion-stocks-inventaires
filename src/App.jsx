@@ -14,15 +14,17 @@ import EditSupplier from "./pages/EditSupplier";
 import StockMovements from "./pages/StockMovements";
 import Inventory from "./pages/Inventory";
 import Dashboard from "./pages/Dashboard";
+import Statistics from "./pages/Statistics";
 import Login from "./pages/Login";
+import Users from "./pages/Users";
 
 function AppContent() {
   const { user } = useAuth();
 
   const [profile, setProfile] = useState({
-    name: "Your Name",
-    email: "your@email.com",
-    username: "username",
+    name: "Ahmed",
+    email: "ahmed@email.com",
+    username: "Ahmed",
     role: "Administrateur"
   });
 
@@ -72,7 +74,6 @@ function AppContent() {
     { id: 15, name: "CableTech", products: "Câbles HDMI, USB, adaptateurs", productsCount: 14 }
   ]);
 
-  // Shared products used by Products, Stock Movements and Inventory
   const [products, setProducts] = useState([
     { id: 1, name: "HP Pavilion 15", category: "PC portables", price: 6500, stock: 10, realStock: "" },
     { id: 2, name: "Dell Inspiron 15", category: "PC portables", price: 7200, stock: 8, realStock: "" },
@@ -96,7 +97,7 @@ function AppContent() {
     { id: 20, name: "APC Back-UPS 650VA", category: "Onduleurs", price: 950, stock: 6, realStock: "" }
   ]);
 
-  // Shared movements history
+  // Shared movements history: declared only once
   const [movements, setMovements] = useState([
     { id: 1, date: "13/11/2026", product: "HP Pavilion 15", type: "Entrée", quantity: 10, user: "Admin" },
     { id: 2, date: "13/11/2026", product: "Logitech G502", type: "Entrée", quantity: 25, user: "Admin" },
@@ -109,6 +110,27 @@ function AppContent() {
     { id: 9, date: "17/11/2026", product: "Canon Pixma TS3440", type: "Entrée", quantity: 4, user: "Admin" },
     { id: 10, date: "17/11/2026", product: "Corsair RAM 16GB", type: "Sortie", quantity: 2, user: "Gestionnaire" }
   ]);
+
+  const [users, setUsers] = useState([
+  {
+    id: 1,
+    name: "Administrateur",
+    username: "admin",
+    email: "admin@example.com",
+    password: "",
+    role: "Administrateur",
+    status: "Actif"
+  },
+  {
+    id: 2,
+    name: "Gestionnaire Demo",
+    username: "gestionnaire",
+    email: "gestionnaire@example.com",
+    password: "",
+    role: "Gestionnaire",
+    status: "Actif"
+  }
+]);
 
   if (!user) {
     return <Login />;
@@ -247,6 +269,23 @@ function AppContent() {
           setSelected={setSelected}
         />
       )}
+
+      {selected === "Statistics" && (
+        <Statistics
+          selected={selected}
+          setSelected={setSelected}
+          products={products}
+          movements={movements}
+        />
+      )}
+      {selected === "Utilisateurs" && (
+  <Users
+    selected={selected}
+    setSelected={setSelected}
+    users={users}
+    setUsers={setUsers}
+  />
+)}
     </>
   );
 }

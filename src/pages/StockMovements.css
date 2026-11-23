@@ -161,3 +161,94 @@
     padding: 20px;
   }
 }
+
+/* Add and edit movement forms */
+
+.movementform {
+  width: 100%;
+  max-width: 650px;
+  margin-top: 25px;
+  padding: 30px;
+  background-color: #21334D;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.movementform label {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.movementform input,
+.movementform select {
+  width: 100%;
+  height: 45px;
+  padding: 0 14px;
+  background-color: #17263c;
+  color: #ffffff;
+  border: 1px solid #354966;
+  border-radius: 7px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.movementform input:focus,
+.movementform select:focus {
+  border-color: #3B82F6;
+}
+
+.movementform input:disabled {
+  color: #aab6c8;
+  cursor: not-allowed;
+}
+
+.movementbuttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.movementbuttons button {
+  min-width: 120px;
+  height: 42px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.movementbuttons button:first-child {
+  background-color: #3B82F6;
+  color: white;
+}
+
+.movementbuttons button:last-child {
+  background-color: #354966;
+  color: white;
+}
+
+.movementbuttons button:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 600px) {
+  .movementform {
+    padding: 20px;
+  }
+
+  .movementbuttons {
+    flex-direction: column;
+  }
+
+  .movementbuttons button {
+    width: 100%;
+  }
+}

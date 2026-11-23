@@ -1,0 +1,419 @@
+
+import { useState } from "react";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
+import "./Users.css";
+
+function Users({ selected, setSelected, users, setUsers }) {
+  const [showForm, setShowForm] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("Tous");
+
+  const emptyForm = {
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "Gestionnaire"
+  };
+
+  const [form, setForm] = useState(emptyForm);
+
+  function openAddForm() {
+    setEditingUser(null);
+    setForm(emptyForm);
+    setShowForm(true);
+  }
+
+  function openEditForm(user) {
+    setEditingUser(user);
+    setForm({
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      password: "",
+      confirmPassword: "",
+      role: user.role
+    });
+    setShowForm(true);
+  }
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    setForm({
+      ...form,
+      [name]: value
+    });
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (
+      !form.name.trim() ||
+      !form.username.trim() ||
+      !form.email.trim()
+    ) {
+      alert("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+
+    if (!editingUser && !form.password) {
+      alert("Veuillez saisir un mot de passe.");
+      return;
+    }
+
+    if (form.password && form.password !== form.confirmPassword) {
+      alert("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    const emailExists = users.some(
+      (user) =>
+        user.email.toLowerCase() === form.email.trim().toLowerCase() &&
+        user.id !== editingUser?.id
+    );
+
+    const usernameExists = users.some(
+      (user) =>
+        user.username.toLowerCase() === form.username.trim().toLowerCase() &&
+        user.id !== editingUser?.id
+    );
+
+    if (emailExists) {
+      alert("Cette adresse email existe déjà.");
+      return;
+    }
+
+    if (usernameExists) {
+      alert("Ce nom d'utilisateur existe déjà.");
+      return;
+    }
+
+    if (editingUser) {
+      const updatedUser = {
+        ...editingUser,
+        name: form.name.trim(),
+        username: form.username.trim(),
+        email: form.email.trim(),
+        role: form.role
+      };
+
+      // Le mot de passe ne change que si un nouveau est saisi.
+      if (form.password) {
+        updatedUser.password = form.password;
+      }
+
+      setUsers(
+        users.map((user) =>
+          user.id === editingUser.id ? updatedUser : user
+        )
+      );
+    } else {
+      const newUser = {
+        id: Date.now(),
+        name: form.name.trim(),
+        username: form.username.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        role: form.role,
+        status: "Actif"
+      };
+
+      setUsers([...users, newUser]);
+    }
+
+    setShowForm(false);
+    setForm(emptyForm);
+    setEditingUser(null);
+  }
+
+  function handleDelete(id) {
+    const confirmed = window.confirm(
+      "Voulez-vous vraiment supprimer cet utilisateur ?"
+    );
+
+    if (confirmed) {
+      setUsers(users.filter((user) => user.id !== id));
+    }
+  }
+
+  function toggleStatus(id) {
+    setUsers(
+      users.map((user) =>
+        user.id === id
+          ? {
+              ...user,
+              status: user.status === "Actif" ? "Inactif" : "Actif"
+            }
+          : user
+      )
+    );
+  }
+
+  const filteredUsers = users.filter((user) => {
+    const searchValue = search.toLowerCase();
+
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchValue) ||
+      user.username.toLowerCase().includes(searchValue) ||
+      user.email.toLowerCase().includes(searchValue);
+
+    const matchesRole =
+      roleFilter === "Tous" || user.role === roleFilter;
+
+    return matchesSearch && matchesRole;
+  });
+
+  return (
+    <>
+      <Navbar />
+
+      <div className="content">
+        <Sidebar selected={selected} setSelected={setSelected} />
+
+        <main className="users-page">
+          <div className="users-header">
+            <div>
+              <h1>Utilisateurs</h1>
+              <p>Gérez les comptes et les rôles des utilisateurs.</p>
+            </div>
+
+            <button className="add-user-btn" onClick={openAddForm}>
+              + Ajouter un utilisateur
+            </button>
+          </div>
+
+          <div className="users-stats">
+            <div className="user-stat-card">
+              <span>Total utilisateurs</span>
+              <strong>{users.length}</strong>
+            </div>
+
+            <div className="user-stat-card">
+              <span>Administrateurs</span>
+              <strong>
+                {users.filter((user) => user.role === "Administrateur").length}
+              </strong>
+            </div>
+
+            <div className="user-stat-card">
+              <span>Gestionnaires</span>
+              <strong>
+                {users.filter((user) => user.role === "Gestionnaire").length}
+              </strong>
+            </div>
+          </div>
+
+          <div className="users-table-card">
+            <div className="users-filters">
+              <input
+                type="text"
+                placeholder="Rechercher un utilisateur..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+              >
+                <option value="Tous">Tous les rôles</option>
+                <option value="Administrateur">Administrateur</option>
+                <option value="Gestionnaire">Gestionnaire</option>
+              </select>
+            </div>
+
+            <div className="users-table-container">
+              <table className="users-table">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Nom d'utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                      <tr key={user.id}>
+                        <td>{user.name}</td>
+                        <td>{user.username}</td>
+                        <td>{user.email}</td>
+
+                        <td>
+                          <span
+                            className={`role-badge ${
+                              user.role === "Administrateur"
+                                ? "admin-role"
+                                : "manager-role"
+                            }`}
+                          >
+                            {user.role}
+                          </span>
+                        </td>
+
+                        <td>
+                          <span
+                            className={`status-badge ${
+                              user.status === "Actif"
+                                ? "active-status"
+                                : "inactive-status"
+                            }`}
+                          >
+                            {user.status}
+                          </span>
+                        </td>
+
+                        <td>
+                          <div className="user-actions">
+                            <button
+                              className="edit-user-btn"
+                              onClick={() => openEditForm(user)}
+                            >
+                              Modifier
+                            </button>
+
+                            <button
+                              className="status-user-btn"
+                              onClick={() => toggleStatus(user.id)}
+                            >
+                              {user.status === "Actif" ? "Désactiver" : "Activer"}
+                            </button>
+
+                            <button
+                              className="delete-user-btn"
+                              onClick={() => handleDelete(user.id)}
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="no-users">
+                        Aucun utilisateur trouvé.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {showForm && (
+            <div className="user-modal-overlay">
+              <div className="user-modal">
+                <div className="user-modal-header">
+                  <h2>
+                    {editingUser
+                      ? "Modifier l'utilisateur"
+                      : "Ajouter un utilisateur"}
+                  </h2>
+
+                  <button
+                    className="close-modal-btn"
+                    onClick={() => setShowForm(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                  <label>Nom complet</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="Nom complet"
+                    required
+                  />
+
+                  <label>Nom d'utilisateur</label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={form.username}
+                    onChange={handleChange}
+                    placeholder="Nom d'utilisateur"
+                    required
+                  />
+
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="exemple@email.com"
+                    required
+                  />
+
+                  <label>
+                    {editingUser
+                      ? "Nouveau mot de passe (facultatif)"
+                      : "Mot de passe"}
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="Mot de passe"
+                    required={!editingUser}
+                  />
+
+                  <label>Confirmer le mot de passe</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Confirmer le mot de passe"
+                    required={!editingUser && !!form.password}
+                  />
+
+                  <label>Rôle</label>
+                  <select
+                    name="role"
+                    value={form.role}
+                    onChange={handleChange}
+                  >
+                    <option value="Administrateur">Administrateur</option>
+                    <option value="Gestionnaire">Gestionnaire</option>
+                  </select>
+
+                  <div className="user-modal-actions">
+                    <button
+                      type="button"
+                      className="cancel-user-btn"
+                      onClick={() => setShowForm(false)}
+                    >
+                      Annuler
+                    </button>
+
+                    <button type="submit" className="save-user-btn">
+                      {editingUser ? "Enregistrer" : "Créer l'utilisateur"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    </>
+  );
+}
+
+export default Users;
