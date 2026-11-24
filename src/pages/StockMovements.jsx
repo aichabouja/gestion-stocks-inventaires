@@ -1,10 +1,8 @@
-
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Searchbar from "../components/Searchbar";
 import Table from "../components/Table";
-import EditStockMovement from "./EditStockMovement";
 import "./StockMovements.css";
 
 const columns = [
@@ -44,7 +42,6 @@ function StockMovements({ selected, setSelected }) {
   ]);
 
   const [showForm, setShowForm] = useState(false);
-  const [editingMovement, setEditingMovement] = useState(null);
 
   const [product, setProduct] = useState("");
   const [type, setType] = useState("Entrée");
@@ -77,22 +74,6 @@ function StockMovements({ selected, setSelected }) {
     handleCancel();
   }
 
-  function handleSave(updatedMovement) {
-    setMovements(movements.map((movement) =>
-      movement.id === updatedMovement.id
-        ? updatedMovement
-        : movement
-    ));
-
-    setEditingMovement(null);
-  }
-
-  function handleDelete(id) {
-    setMovements(movements.filter((movement) =>
-      movement.id !== id
-    ));
-  }
-
   function handleCancel() {
     setShowForm(false);
     setProduct("");
@@ -110,18 +91,6 @@ function StockMovements({ selected, setSelected }) {
 
     return matchesSearch && matchesType;
   });
-
-  if (editingMovement) {
-    return (
-      <EditStockMovement
-        movement={editingMovement}
-        selected={selected}
-        setSelected={setSelected}
-        onCancel={() => setEditingMovement(null)}
-        onSave={handleSave}
-      />
-    );
-  }
 
   return (
     <>
@@ -214,8 +183,6 @@ function StockMovements({ selected, setSelected }) {
                   <Table
                     data={filteredMovements}
                     columns={columns}
-                    onEdit={setEditingMovement}
-                    onDelete={handleDelete}
                   />
                 </div>
               ) : (

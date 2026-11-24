@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/useAuth";
@@ -18,8 +17,11 @@ import Statistics from "./pages/Statistics";
 import Login from "./pages/Login";
 import Users from "./pages/Users";
 
+// Pages that a Gestionnaire is NOT allowed to open
+const GESTIONNAIRE_FORBIDDEN_PAGES = ["Statistics", "Utilisateurs"];
+
 function AppContent() {
-  const { user } = useAuth();
+  const { user, users, setUsers } = useAuth();
 
   const [profile, setProfile] = useState({
     name: "Ahmed",
@@ -97,7 +99,6 @@ function AppContent() {
     { id: 20, name: "APC Back-UPS 650VA", category: "Onduleurs", price: 950, stock: 6, realStock: "" }
   ]);
 
-  // Shared movements history: declared only once
   const [movements, setMovements] = useState([
     { id: 1, date: "13/11/2026", product: "HP Pavilion 15", type: "Entrée", quantity: 10, user: "Admin" },
     { id: 2, date: "13/11/2026", product: "Logitech G502", type: "Entrée", quantity: 25, user: "Admin" },
@@ -111,30 +112,18 @@ function AppContent() {
     { id: 10, date: "17/11/2026", product: "Corsair RAM 16GB", type: "Sortie", quantity: 2, user: "Gestionnaire" }
   ]);
 
-  const [users, setUsers] = useState([
-  {
-    id: 1,
-    name: "Administrateur",
-    username: "admin",
-    email: "admin@example.com",
-    password: "",
-    role: "Administrateur",
-    status: "Actif"
-  },
-  {
-    id: 2,
-    name: "Gestionnaire Demo",
-    username: "gestionnaire",
-    email: "gestionnaire@example.com",
-    password: "",
-    role: "Gestionnaire",
-    status: "Actif"
-  }
-]);
-
   if (!user) {
     return <Login />;
   }
+
+  // Decide which page to really show.
+  // If a Gestionnaire is on a forbidden page, show "Products" instead.
+  // This is calculated during render, so no useEffect is needed.
+  const isGestionnaire = user.role === "Gestionnaire";
+  const page =
+    isGestionnaire && GESTIONNAIRE_FORBIDDEN_PAGES.includes(selected)
+      ? "Products"
+      : selected;
 
   function handleSaveProfile(updatedProfile) {
     setProfile(updatedProfile);
@@ -165,24 +154,24 @@ function AppContent() {
 
   return (
     <>
-      {selected === "Products" && (
+      {page === "Products" && (
         <Products
-          selected={selected}
+          selected={page}
           setSelected={setSelected}
           products={products}
           setProducts={setProducts}
         />
       )}
 
-      {selected === "Profile" && (
+      {page === "Profile" && (
         <Profile
-          selected={selected}
+          selected={page}
           setSelected={setSelected}
           profile={profile}
         />
       )}
 
-      {selected === "EditProfile" && (
+      {page === "EditProfile" && (
         <EditProfile
           profile={profile}
           setSelected={setSelected}
@@ -190,7 +179,7 @@ function AppContent() {
         />
       )}
 
-      {selected === "EditProduct" && (
+      {page === "EditProduct" && (
         <EditProduct
           product={editingProduct}
           onCancel={() => setSelected("Products")}
@@ -198,9 +187,9 @@ function AppContent() {
         />
       )}
 
-      {selected === "Categories" && (
+      {page === "Categories" && (
         <Categories
-          selected={selected}
+          selected={page}
           setSelected={setSelected}
           categories={categories}
           setCategories={setCategories}
@@ -211,7 +200,7 @@ function AppContent() {
         />
       )}
 
-      {selected === "EditCategory" && editingCategory && (
+      {page === "EditCategory" && editingCategory && (
         <EditCategory
           category={editingCategory}
           setSelected={setSelected}
@@ -220,9 +209,9 @@ function AppContent() {
         />
       )}
 
-      {selected === "Suppliers" && (
+      {page === "Suppliers" && (
         <Suppliers
-          selected={selected}
+          selected={page}
           setSelected={setSelected}
           suppliers={suppliers}
           setSuppliers={setSuppliers}
@@ -233,19 +222,19 @@ function AppContent() {
         />
       )}
 
-      {selected === "EditSupplier" && (
+      {page === "EditSupplier" && (
         <EditSupplier
           supplier={editingSupplier}
-          selected={selected}
+          selected={page}
           setSelected={setSelected}
           onCancel={() => setSelected("Suppliers")}
           onSave={handleSaveSupplier}
         />
       )}
 
-      {selected === "StockMovements" && (
+      {page === "StockMovements" && (
         <StockMovements
-          selected={selected}
+          selected={page}
           setSelected={setSelected}
           products={products}
           setProducts={setProducts}
@@ -254,38 +243,39 @@ function AppContent() {
         />
       )}
 
-      {selected === "Inventory" && (
+      {page === "Inventory" && (
         <Inventory
-          selected={selected}
+          selected={page}
           setSelected={setSelected}
           products={products}
           setProducts={setProducts}
         />
       )}
 
-      {selected === "Dashboard" && (
+      {page === "Dashboard" && (
         <Dashboard
-          selected={selected}
+          selected={page}
           setSelected={setSelected}
         />
       )}
 
-      {selected === "Statistics" && (
+      {page === "Statistics" && (
         <Statistics
-          selected={selected}
+          selected={page}
           setSelected={setSelected}
           products={products}
           movements={movements}
         />
       )}
-      {selected === "Utilisateurs" && (
-  <Users
-    selected={selected}
-    setSelected={setSelected}
-    users={users}
-    setUsers={setUsers}
-  />
-)}
+
+      {page === "Utilisateurs" && (
+        <Users
+          selected={page}
+          setSelected={setSelected}
+          users={users}
+          setUsers={setUsers}
+        />
+      )}
     </>
   );
 }

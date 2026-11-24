@@ -1,4 +1,3 @@
-
 import { createContext, useState, createElement } from "react";
 
 export const AuthContext = createContext(null);
@@ -6,18 +5,45 @@ export const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  function login(username, password) {
-    if (username === "admin" && password === "admin123") {
-      setUser({
-        username: "admin",
-        name: "Administrateur",
-        role: "Administrateur"
-      });
+  const [users, setUsers] = useState([
+    {
+      id: 1,
+      name: "Administrateur",
+      username: "admin",
+      email: "admin@example.com",
+      password: "admin123",
+      role: "Administrateur",
+      status: "Actif"
+    },
+    {
+      id: 2,
+      name: "Gestionnaire Demo",
+      username: "gestionnaire",
+      email: "gestionnaire@example.com",
+      password: "gestionnaire123",
+      role: "Gestionnaire",
+      status: "Actif"
+    }
+  ]);
 
-      return true;
+  function login(username, password) {
+    const account = users.find(
+      (item) =>
+        (item.username.toLowerCase() === username.toLowerCase() ||
+          item.email.toLowerCase() === username.toLowerCase()) &&
+        item.password === password &&
+        item.status === "Actif"
+    );
+
+    if (!account) {
+      return false;
     }
 
-    return false;
+    const userInfo = { ...account };
+    delete userInfo.password;
+
+    setUser(userInfo);
+    return true;
   }
 
   function logout() {
@@ -26,7 +52,15 @@ export function AuthProvider({ children }) {
 
   return createElement(
     AuthContext.Provider,
-    { value: { user, login, logout } },
+    {
+      value: {
+        user,
+        users,
+        setUsers,
+        login,
+        logout
+      }
+    },
     children
   );
 }

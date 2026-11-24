@@ -1,8 +1,9 @@
-
 import "./Table.css";
 import { Pencil, Trash2 } from "lucide-react";
 
 function Table({ data = [], columns = [], onEdit, onDelete }) {
+  const showActions = onEdit || onDelete;
+
   return (
     <table>
       <thead>
@@ -10,7 +11,7 @@ function Table({ data = [], columns = [], onEdit, onDelete }) {
           {columns.map((column) => (
             <th key={column.key}>{column.title}</th>
           ))}
-          <th>Actions</th>
+          {showActions && <th>Actions</th>}
         </tr>
       </thead>
 
@@ -21,15 +22,21 @@ function Table({ data = [], columns = [], onEdit, onDelete }) {
               <td key={column.key}>{item[column.key]}</td>
             ))}
 
-            <td>
-              <button onClick={() => onEdit(item)}>
-                <Pencil size={18} />
-              </button>
+            {showActions && (
+              <td>
+                {onEdit && (
+                  <button onClick={() => onEdit(item)}>
+                    <Pencil size={18} />
+                  </button>
+                )}
 
-              <button onClick={() => onDelete(item.id)}>
-                <Trash2 size={18} />
-              </button>
-            </td>
+                {onDelete && (
+                  <button onClick={() => onDelete(item.id)}>
+                    <Trash2 size={18} />
+                  </button>
+                )}
+              </td>
+            )}
           </tr>
         ))}
       </tbody>
