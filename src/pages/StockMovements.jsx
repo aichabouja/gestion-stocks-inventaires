@@ -3,6 +3,9 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Searchbar from "../components/Searchbar";
 import Table from "../components/Table";
+import Pagination from "../components/Pagination";
+import { useAuth } from "../context/useAuth";
+import "../components/Filters.css";
 import "./StockMovements.css";
 
 const columns = [
@@ -13,33 +16,30 @@ const columns = [
   { title: "Effectué par", key: "user" }
 ];
 
-function StockMovements({ selected, setSelected }) {
-  const [movements, setMovements] = useState([
-    {
-      id: 1,
-      date: "13/11/2026",
-      product: "HP Pavilion 15",
-      type: "Entrée",
-      quantity: 10,
-      user: "Admin"
-    },
-    {
-      id: 2,
-      date: "12/11/2026",
-      product: "Logitech G502",
-      type: "Sortie",
-      quantity: 2,
-      user: "Gestionnaire"
-    },
-    {
-      id: 3,
-      date: "11/11/2026",
-      product: "HyperX Cloud II",
-      type: "Entrée",
-      quantity: 5,
-      user: "Admin"
-    }
-  ]);
+function dateToTime(date) {
+  const [day, month, year] = date.split("/");
+  return new Date(year, month - 1, day).getTime();
+}
+
+const ITEMS_PER_PAGE = 10;
+
+function getNextId(list) {
+  return Math.max(0, ...list.map((item) => item.id)) + 1;
+}
+
+function getToday() {
+  return new Date().toLocaleDateString("fr-FR");
+}
+
+function StockMovements({
+  selected,
+  setSelected,
+  products = [],
+  setProducts,
+  movements = [],
+  setMovements
+}) {
+  const { user } = useAuth();
 
   const [showForm, setShowForm] = useState(false);
 
@@ -48,8 +48,19 @@ function StockMovements({ selected, setSelected }) {
   const [quantity, setQuantity] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("Tous");
+  const [filterUser, setFilterUser] = useState("Tous");
+  const [page, setPage] = useState(1);
 
-  const currentUser = "Admin";
+  function changeFilter(setter, value) {
+    setter(value);
+    setPage(1);
+  }
+
+  const currentUser = user?.role === "Administrateur" ? "Admin" : "Gestionnaire";
+
+  const activeProducts = products.filter(
+    (item) => item.status !== "Inactif"
+  );
 
   function handleAdd() {
     if (
@@ -61,16 +72,44 @@ function StockMovements({ selected, setSelected }) {
       return;
     }
 
+    const selectedProduct = activeProducts.find((item) => item.name === product);
+
+    if (!selectedProduct) {
+      alert("Produit introuvable.");
+      return;
+    }
+
+    const amount = Number(quantity);
+
+    if (type === "Sortie" && amount > selectedProduct.stock) {
+      alert(
+        `Stock insuffisant. Stock disponible : ${selectedProduct.stock}`
+      );
+      return;
+    }
+
     const newMovement = {
-      id: Date.now(),
-      date: new Date().toLocaleDateString("fr-FR"),
+      id: getNextId(movements),
+      date: getToday(),
       product,
       type,
-      quantity: Number(quantity),
+      quantity: amount,
       user: currentUser
     };
 
     setMovements([newMovement, ...movements]);
+
+    setProducts(
+      products.map((item) =>
+        item.id === selectedProduct.id
+          ? {
+              ...item,
+              stock: type === "Entrée" ? item.stock + amount : item.stock - amount
+            }
+          : item
+      )
+    );
+
     handleCancel();
   }
 
@@ -89,8 +128,21 @@ function StockMovements({ selected, setSelected }) {
     const matchesType =
       filterType === "Tous" || movement.type === filterType;
 
-    return matchesSearch && matchesType;
-  });
+    const matchesUser =
+      filterUser === "Tous" || movement.user === filterUser;
+
+    return matchesSearch && matchesType && matchesUser;
+  }).sort(
+    (a, b) => dateToTime(b.date) - dateToTime(a.date) || b.id - a.id
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredMovements.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+
+  const pageMovements = filteredMovements.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <>
@@ -116,9 +168,11 @@ function StockMovements({ selected, setSelected }) {
                   onChange={(e) => setProduct(e.target.value)}
                 >
                   <option value="">Sélectionner un produit</option>
-                  <option value="HP Pavilion 15">HP Pavilion 15</option>
-                  <option value="Logitech G502">Logitech G502</option>
-                  <option value="HyperX Cloud II">HyperX Cloud II</option>
+                  {activeProducts.map((item) => (
+                    <option key={item.id} value={item.name}>
+                      {item.name} (stock : {item.stock})
+                    </option>
+                  ))}
                 </select>
 
                 <label>Type de mouvement</label>
@@ -161,30 +215,48 @@ function StockMovements({ selected, setSelected }) {
                 </button>
               </div>
 
-              <div className="movementfilters">
+              <div className="filters">
                 <Searchbar
                   placeholder="Rechercher un produit..."
                   value={searchTerm}
-                  onChange={setSearchTerm}
+                  onChange={(value) => changeFilter(setSearchTerm, value)}
                 />
 
                 <select
                   value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
+                  onChange={(e) => changeFilter(setFilterType, e.target.value)}
                 >
                   <option value="Tous">Tous les mouvements</option>
                   <option value="Entrée">Entrées</option>
                   <option value="Sortie">Sorties</option>
                 </select>
+
+                <select
+                  value={filterUser}
+                  onChange={(e) => changeFilter(setFilterUser, e.target.value)}
+                >
+                  <option value="Tous">Tous les utilisateurs</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Gestionnaire">Gestionnaire</option>
+                </select>
               </div>
 
               {filteredMovements.length > 0 ? (
-                <div className="movementtable">
-                  <Table
-                    data={filteredMovements}
-                    columns={columns}
+                <>
+                  <div className="movementtable">
+                    <Table
+                      data={pageMovements}
+                      columns={columns}
+                    />
+                  </div>
+
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={filteredMovements.length}
+                    onPageChange={setPage}
                   />
-                </div>
+                </>
               ) : (
                 <div className="empty">
                   <h2>Aucun mouvement trouvé</h2>

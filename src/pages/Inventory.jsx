@@ -1,19 +1,55 @@
-
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Searchbar from "../components/Searchbar";
+import Pagination from "../components/Pagination";
+import "../components/Filters.css";
 import "./Inventory.css";
 
-function Inventory({ selected, setSelected }) {
-  const [products, setProducts] = useState([
-    { id: 1, name: "HP Pavilion 15", theoreticalStock: 10, realStock: "" },
-    { id: 2, name: "Logitech G502", theoreticalStock: 10, realStock: "" },
-    { id: 3, name: "HyperX Cloud II", theoreticalStock: 5, realStock: "" }
-  ]);
+const ITEMS_PER_PAGE = 10;
 
+function calculateDifference(product) {
+  if (product.realStock === "") {
+    return 0;
+  }
+
+  return Number(product.realStock) - product.stock;
+}
+
+function getDifferenceType(product) {
+  if (product.realStock === "") {
+    return "noncompte";
+  }
+
+  const difference = calculateDifference(product);
+
+  if (difference < 0) {
+    return "manquant";
+  }
+
+  if (difference > 0) {
+    return "excedent";
+  }
+
+  return "conforme";
+}
+
+function Inventory({
+  selected,
+  setSelected,
+  products = [],
+  setProducts,
+  categories = []
+}) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [showResults, setShowResults] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("Toutes");
+  const [differenceFilter, setDifferenceFilter] = useState("Tous");
+  const [page, setPage] = useState(1);
+
+  function changeFilter(setter, value) {
+    setter(value);
+    setPage(1);
+  }
 
   function handleRealStockChange(id, value) {
     if (value !== "" && Number(value) < 0) {
@@ -27,30 +63,34 @@ function Inventory({ selected, setSelected }) {
           : product
       )
     );
-
-    setShowResults(false);
   }
 
-  function calculateDifference(product) {
-    return Number(product.realStock) - product.theoreticalStock;
-  }
+  const search = searchTerm.toLowerCase();
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products.filter((product) => {
+    const isActive = product.status !== "Inactif";
+
+    const matchesSearch =
+      product.name.toLowerCase().includes(search) ||
+      (product.barcode || "").includes(search);
+
+    const matchesCategory =
+      categoryFilter === "Toutes" || product.category === categoryFilter;
+
+    const matchesDifference =
+      differenceFilter === "Tous" ||
+      getDifferenceType(product) === differenceFilter;
+
+    return isActive && matchesSearch && matchesCategory && matchesDifference;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+
+  const pageProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
-
-  function handleCalculate() {
-    const incomplete = products.some(
-      (product) => product.realStock === ""
-    );
-
-    if (incomplete) {
-      alert("Veuillez saisir le stock réel de tous les produits.");
-      return;
-    }
-
-    setShowResults(true);
-  }
 
   return (
     <>
@@ -69,16 +109,41 @@ function Inventory({ selected, setSelected }) {
 
           <div className="inventoryinfo">
             <p>
-              Saisissez la quantité réellement présente pour chaque produit,
-              puis calculez les écarts.
+              Saisissez la quantité réellement présente pour un produit,
+              l'écart se calcule automatiquement.
             </p>
           </div>
 
-          <Searchbar
-            placeholder="Rechercher un produit..."
-            value={searchTerm}
-            onChange={setSearchTerm}
-          />
+          <div className="filters">
+            <Searchbar
+              placeholder="Rechercher par nom ou code-barres..."
+              value={searchTerm}
+              onChange={(value) => changeFilter(setSearchTerm, value)}
+            />
+
+            <select
+              value={categoryFilter}
+              onChange={(e) => changeFilter(setCategoryFilter, e.target.value)}
+            >
+              <option value="Toutes">Toutes les catégories</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={differenceFilter}
+              onChange={(e) => changeFilter(setDifferenceFilter, e.target.value)}
+            >
+              <option value="Tous">Tous les écarts</option>
+              <option value="noncompte">Non comptés</option>
+              <option value="conforme">Sans écart</option>
+              <option value="manquant">Manquants (écart négatif)</option>
+              <option value="excedent">Excédents (écart positif)</option>
+            </select>
+          </div>
 
           {filteredProducts.length > 0 ? (
             <>
@@ -89,56 +154,56 @@ function Inventory({ selected, setSelected }) {
                       <th>Produit</th>
                       <th>Stock théorique</th>
                       <th>Stock réel</th>
-                      {showResults && <th>Écart</th>}
+                      <th>Écart</th>
                     </tr>
                   </thead>
 
                   <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id}>
-                        <td>{product.name}</td>
-                        <td>{product.theoreticalStock}</td>
-                        <td>
-                          <input
-                            type="number"
-                            min="0"
-                            value={product.realStock}
-                            onChange={(e) =>
-                              handleRealStockChange(
-                                product.id,
-                                e.target.value
-                              )
-                            }
-                            placeholder="Quantité réelle"
-                          />
-                        </td>
+                    {pageProducts.map((product) => {
+                      const difference = calculateDifference(product);
 
-                        {showResults && (
+                      return (
+                        <tr key={product.id}>
+                          <td>{product.name}</td>
+                          <td>{product.stock}</td>
+                          <td>
+                            <input
+                              type="number"
+                              min="0"
+                              value={product.realStock}
+                              onChange={(e) =>
+                                handleRealStockChange(
+                                  product.id,
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Quantité réelle"
+                            />
+                          </td>
                           <td
                             className={
-                              calculateDifference(product) < 0
+                              difference < 0
                                 ? "negative"
-                                : calculateDifference(product) > 0
+                                : difference > 0
                                 ? "positive"
                                 : ""
                             }
                           >
-                            {calculateDifference(product) > 0
-                              ? `+${calculateDifference(product)}`
-                              : calculateDifference(product)}
+                            {difference > 0 ? `+${difference}` : difference}
                           </td>
-                        )}
-                      </tr>
-                    ))}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
 
-              <div className="inventorybuttons">
-                <button onClick={handleCalculate}>
-                  Calculer les écarts
-                </button>
-              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredProducts.length}
+                onPageChange={setPage}
+              />
             </>
           ) : (
             <div className="empty">

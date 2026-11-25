@@ -1,47 +1,37 @@
-
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "./Dashboard.css";
 
-function Dashboard({ selected, setSelected }) {
-  const products = [
-    { id: 1, name: "HP Pavilion 15", stock: 10, minStock: 5 },
-    { id: 2, name: "Logitech G502", stock: 0, minStock: 3 },
-    { id: 3, name: "HyperX Cloud II", stock: 2, minStock: 5 }
-  ];
+const DEFAULT_MIN_STOCK = 5;
 
-  const movements = [
-    {
-      id: 1,
-      product: "HP Pavilion 15",
-      type: "Entrée",
-      quantity: 10,
-      date: "13/11/2026"
-    },
-    {
-      id: 2,
-      product: "Logitech G502",
-      type: "Sortie",
-      quantity: 2,
-      date: "12/11/2026"
-    },
-    {
-      id: 3,
-      product: "HyperX Cloud II",
-      type: "Entrée",
-      quantity: 5,
-      date: "11/11/2026"
-    }
-  ];
+function dateToTime(date) {
+  const [day, month, year] = date.split("/");
+  return new Date(year, month - 1, day).getTime();
+}
 
-  const outOfStock = products.filter(
+function Dashboard({ selected, setSelected, products: allProducts = [], movements = [] }) {
+  const products = allProducts.filter(
+    (product) => product.status !== "Inactif"
+  );
+
+  const outOfStockProducts = products.filter(
     (product) => product.stock === 0
-  ).length;
+  );
 
-  const lowStock = products.filter(
+  const lowStockProducts = products.filter(
     (product) =>
-      product.stock > 0 && product.stock <= product.minStock
-  ).length;
+      product.stock > 0 &&
+      product.stock <= (product.minStock ?? DEFAULT_MIN_STOCK)
+  );
+
+  const outOfStock = outOfStockProducts.length;
+  const lowStock = lowStockProducts.length;
+
+  const alertProducts = [...outOfStockProducts, ...lowStockProducts];
+
+  const sortedMovements = [...movements].sort(
+    (a, b) => dateToTime(b.date) - dateToTime(a.date) || b.id - a.id
+  );
 
   return (
     <>
@@ -75,6 +65,34 @@ function Dashboard({ selected, setSelected }) {
             </div>
           </div>
 
+          {alertProducts.length > 0 && (
+            <div className="recentmovements">
+              <h2>Produits en alerte</h2>
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produit</th>
+                    <th>Catégorie</th>
+                    <th>Stock</th>
+                    <th>État</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {alertProducts.map((product) => (
+                    <tr key={product.id}>
+                      <td>{product.name}</td>
+                      <td>{product.category}</td>
+                      <td>{product.stock}</td>
+                      <td>{product.stock === 0 ? "En rupture" : "Stock faible"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           <div className="recentmovements">
             <h2>Derniers mouvements de stock</h2>
 
@@ -89,7 +107,7 @@ function Dashboard({ selected, setSelected }) {
               </thead>
 
               <tbody>
-                {movements.map((movement) => (
+                {sortedMovements.map((movement) => (
                   <tr key={movement.id}>
                     <td>{movement.date}</td>
                     <td>{movement.product}</td>

@@ -2,7 +2,12 @@
   width: 250px;
   background-color: #1A2940;
   box-sizing: border-box;
-  
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  align-self: flex-start;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 .sidebar ul{
   list-style: none;

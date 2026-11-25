@@ -46,6 +46,31 @@ export function AuthProvider({ children }) {
     return true;
   }
 
+  function updateProfile(updatedInfo) {
+    const { password, ...infoWithoutPassword } = updatedInfo;
+
+    setUsers(
+      users.map((item) =>
+        item.id === user.id
+          ? {
+              ...item,
+              ...infoWithoutPassword,
+              ...(password ? { password } : {}),
+              role: item.role,
+              status: item.status
+            }
+          : item
+      )
+    );
+
+    setUser({
+      ...user,
+      ...infoWithoutPassword,
+      role: user.role,
+      status: user.status
+    });
+  }
+
   function logout() {
     setUser(null);
   }
@@ -58,7 +83,8 @@ export function AuthProvider({ children }) {
         users,
         setUsers,
         login,
-        logout
+        logout,
+        updateProfile
       }
     },
     children

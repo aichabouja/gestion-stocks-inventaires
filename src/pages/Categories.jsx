@@ -1,9 +1,10 @@
-
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Table from "../components/Table";
 import Searchbar from "../components/Searchbar";
+import Pagination from "../components/Pagination";
+import "../components/Filters.css";
 import "./Categories.css";
 
 const columns = [
@@ -11,15 +12,41 @@ const columns = [
   { title: "Nombre de produits", key: "productsCount" }
 ];
 
+const ITEMS_PER_PAGE = 10;
+
+function sortCategories(list, sortBy) {
+  const sorted = [...list];
+
+  if (sortBy === "name-asc") {
+    sorted.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  } else if (sortBy === "name-desc") {
+    sorted.sort((a, b) => b.name.localeCompare(a.name, "fr"));
+  } else if (sortBy === "count-desc") {
+    sorted.sort((a, b) => b.productsCount - a.productsCount);
+  } else if (sortBy === "count-asc") {
+    sorted.sort((a, b) => a.productsCount - b.productsCount);
+  }
+
+  return sorted;
+}
+
 function Categories({
   selected,
   setSelected,
-  categories,
+  categories = [],
   setCategories,
   onEditCategory
 }) {
   const [categoryForm, setCategoryForm] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [contentFilter, setContentFilter] = useState("Toutes");
+  const [sortBy, setSortBy] = useState("name-asc");
+  const [page, setPage] = useState(1);
+
+  function changeFilter(setter, value) {
+    setter(value);
+    setPage(1);
+  }
 
   function handleSave(e) {
     e.preventDefault();
@@ -40,7 +67,7 @@ function Categories({
     }
 
     const newCategory = {
-      id: Date.now(),
+      id: Math.max(0, ...categories.map((category) => category.id)) + 1,
       name: categoryForm.name.trim(),
       productsCount: 0
     };
@@ -49,19 +76,39 @@ function Categories({
     setCategoryForm(null);
   }
 
-  function handleDelete(id) {
-    const category = categories.find((item) => item.id === id);
-
+  function getDeleteError(category) {
     if (category.productsCount > 0) {
-      alert("Impossible de supprimer une catégorie qui contient des produits.");
-      return;
+      return `Impossible de supprimer « ${category.name} » : ${category.productsCount} produit(s) utilisent encore cette catégorie.`;
     }
 
+    return null;
+  }
+
+  function handleDelete(id) {
     setCategories(categories.filter((item) => item.id !== id));
   }
 
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCategories = categories.filter((category) => {
+    const matchesSearch = category.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const matchesContent =
+      contentFilter === "Toutes" ||
+      (contentFilter === "avec" && category.productsCount > 0) ||
+      (contentFilter === "vides" && category.productsCount === 0);
+
+    return matchesSearch && matchesContent;
+  });
+
+  const sortedCategories = sortCategories(filteredCategories, sortBy);
+
+  const totalPages = Math.max(1, Math.ceil(sortedCategories.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+
+  const pageCategories = sortedCategories.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   return (
@@ -125,26 +172,62 @@ function Categories({
                 </button>
               </div>
 
-              <Searchbar
-                placeholder="Rechercher une catégorie..."
-                value={searchTerm}
-                onChange={setSearchTerm}
-              />
+              <div className="filters">
+                <Searchbar
+                  placeholder="Rechercher une catégorie..."
+                  value={searchTerm}
+                  onChange={(value) => changeFilter(setSearchTerm, value)}
+                />
 
-              {categories.length > 0 ? (
-                <div className="categories-table">
-                  <Table
-                    data={filteredCategories}
-                    columns={columns}
-                    onEdit={onEditCategory}
-                    onDelete={handleDelete}
-                  />
-                </div>
-              ) : (
+                <select
+                  value={contentFilter}
+                  onChange={(e) => changeFilter(setContentFilter, e.target.value)}
+                >
+                  <option value="Toutes">Toutes les catégories</option>
+                  <option value="avec">Avec produits</option>
+                  <option value="vides">Vides</option>
+                </select>
+
+                <select
+                  value={sortBy}
+                  onChange={(e) => changeFilter(setSortBy, e.target.value)}
+                >
+                  <option value="name-asc">Nom (A → Z)</option>
+                  <option value="name-desc">Nom (Z → A)</option>
+                  <option value="count-desc">Plus de produits</option>
+                  <option value="count-asc">Moins de produits</option>
+                </select>
+              </div>
+
+              {categories.length === 0 ? (
                 <div className="empty">
                   <h2>Aucune catégorie pour le moment</h2>
                   <p>Cliquez sur le bouton ci-dessus pour ajouter une catégorie.</p>
                 </div>
+              ) : sortedCategories.length === 0 ? (
+                <div className="empty">
+                  <h2>Aucune catégorie trouvée</h2>
+                  <p>Essayez de modifier votre recherche ou vos filtres.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="categories-table">
+                    <Table
+                      data={pageCategories}
+                      columns={columns}
+                      onEdit={onEditCategory}
+                      onDelete={handleDelete}
+                      getDeleteError={getDeleteError}
+                    />
+                  </div>
+
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={sortedCategories.length}
+                    onPageChange={setPage}
+                  />
+                </>
               )}
             </>
           )}
@@ -155,4 +238,3 @@ function Categories({
 }
 
 export default Categories;
-

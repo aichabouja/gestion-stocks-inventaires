@@ -5,7 +5,6 @@ import { useAuth } from "./context/useAuth";
 import EditProfile from "./pages/EditProfile";
 import Products from "./pages/Products";
 import Profile from "./pages/Profile";
-import EditProduct from "./pages/EditProduct";
 import Categories from "./pages/Categories";
 import EditCategory from "./pages/EditCategory";
 import Suppliers from "./pages/Suppliers";
@@ -17,21 +16,12 @@ import Statistics from "./pages/Statistics";
 import Login from "./pages/Login";
 import Users from "./pages/Users";
 
-// Pages that a Gestionnaire is NOT allowed to open
 const GESTIONNAIRE_FORBIDDEN_PAGES = ["Statistics", "Utilisateurs"];
 
 function AppContent() {
-  const { user, users, setUsers } = useAuth();
-
-  const [profile, setProfile] = useState({
-    name: "Ahmed",
-    email: "ahmed@email.com",
-    username: "Ahmed",
-    role: "Administrateur"
-  });
+  const { user, users, setUsers, updateProfile } = useAuth();
 
   const [selected, setSelected] = useState("Products");
-  const [editingProduct] = useState(null);
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
 
@@ -77,26 +67,26 @@ function AppContent() {
   ]);
 
   const [products, setProducts] = useState([
-    { id: 1, name: "HP Pavilion 15", category: "PC portables", price: 6500, stock: 10, realStock: "" },
-    { id: 2, name: "Dell Inspiron 15", category: "PC portables", price: 7200, stock: 8, realStock: "" },
-    { id: 3, name: "Lenovo ThinkPad E14", category: "PC portables", price: 8900, stock: 5, realStock: "" },
-    { id: 4, name: "Logitech G502", category: "Souris", price: 450, stock: 25, realStock: "" },
-    { id: 5, name: "Logitech M185", category: "Souris", price: 120, stock: 40, realStock: "" },
-    { id: 6, name: "Redragon K552", category: "Claviers", price: 390, stock: 15, realStock: "" },
-    { id: 7, name: "Logitech K120", category: "Claviers", price: 110, stock: 30, realStock: "" },
-    { id: 8, name: "HyperX Cloud II", category: "Casques", price: 850, stock: 12, realStock: "" },
-    { id: 9, name: "JBL Quantum 100", category: "Casques", price: 420, stock: 18, realStock: "" },
-    { id: 10, name: "Samsung 24 pouces", category: "Écrans", price: 1450, stock: 9, realStock: "" },
-    { id: 11, name: "LG UltraGear 27", category: "Écrans", price: 2800, stock: 6, realStock: "" },
-    { id: 12, name: "Kingston SSD 480GB", category: "SSD", price: 550, stock: 20, realStock: "" },
-    { id: 13, name: "Samsung SSD 1TB", category: "SSD", price: 1100, stock: 14, realStock: "" },
-    { id: 14, name: "Seagate HDD 1TB", category: "Disques durs", price: 650, stock: 11, realStock: "" },
-    { id: 15, name: "Kingston RAM 8GB", category: "Mémoire RAM", price: 280, stock: 22, realStock: "" },
-    { id: 16, name: "Corsair RAM 16GB", category: "Mémoire RAM", price: 620, stock: 13, realStock: "" },
-    { id: 17, name: "TP-Link Archer C6", category: "Routeurs et réseaux", price: 490, stock: 7, realStock: "" },
-    { id: 18, name: "TP-Link USB WiFi", category: "Routeurs et réseaux", price: 160, stock: 19, realStock: "" },
-    { id: 19, name: "Canon Pixma TS3440", category: "Imprimantes", price: 850, stock: 4, realStock: "" },
-    { id: 20, name: "APC Back-UPS 650VA", category: "Onduleurs", price: 950, stock: 6, realStock: "" }
+    { id: 1, reference: "PRD-0001", barcode: "6111000000014", name: "HP Pavilion 15", category: "PC portables", price: 6500, stock: 10, minStock: 5, realStock: "", status: "Actif" },
+    { id: 2, reference: "PRD-0002", barcode: "6111000000021", name: "Dell Inspiron 15", category: "PC portables", price: 7200, stock: 8, minStock: 5, realStock: "", status: "Actif" },
+    { id: 3, reference: "PRD-0003", barcode: "6111000000038", name: "Lenovo ThinkPad E14", category: "PC portables", price: 8900, stock: 5, minStock: 5, realStock: "", status: "Actif" },
+    { id: 4, reference: "PRD-0004", barcode: "6111000000045", name: "Logitech G502", category: "Souris", price: 450, stock: 25, minStock: 5, realStock: "", status: "Actif" },
+    { id: 5, reference: "PRD-0005", barcode: "6111000000052", name: "Logitech M185", category: "Souris", price: 120, stock: 40, minStock: 5, realStock: "", status: "Actif" },
+    { id: 6, reference: "PRD-0006", barcode: "6111000000069", name: "Redragon K552", category: "Claviers", price: 390, stock: 15, minStock: 5, realStock: "", status: "Actif" },
+    { id: 7, reference: "PRD-0007", barcode: "6111000000076", name: "Logitech K120", category: "Claviers", price: 110, stock: 30, minStock: 5, realStock: "", status: "Actif" },
+    { id: 8, reference: "PRD-0008", barcode: "6111000000083", name: "HyperX Cloud II", category: "Casques", price: 850, stock: 12, minStock: 5, realStock: "", status: "Actif" },
+    { id: 9, reference: "PRD-0009", barcode: "6111000000090", name: "JBL Quantum 100", category: "Casques", price: 420, stock: 18, minStock: 5, realStock: "", status: "Actif" },
+    { id: 10, reference: "PRD-0010", barcode: "6111000000106", name: "Samsung 24 pouces", category: "Écrans", price: 1450, stock: 9, minStock: 5, realStock: "", status: "Actif" },
+    { id: 11, reference: "PRD-0011", barcode: "6111000000113", name: "LG UltraGear 27", category: "Écrans", price: 2800, stock: 6, minStock: 5, realStock: "", status: "Actif" },
+    { id: 12, reference: "PRD-0012", barcode: "6111000000120", name: "Kingston SSD 480GB", category: "SSD", price: 550, stock: 20, minStock: 5, realStock: "", status: "Actif" },
+    { id: 13, reference: "PRD-0013", barcode: "6111000000137", name: "Samsung SSD 1TB", category: "SSD", price: 1100, stock: 14, minStock: 5, realStock: "", status: "Actif" },
+    { id: 14, reference: "PRD-0014", barcode: "6111000000144", name: "Seagate HDD 1TB", category: "Disques durs", price: 650, stock: 11, minStock: 5, realStock: "", status: "Actif" },
+    { id: 15, reference: "PRD-0015", barcode: "6111000000151", name: "Kingston RAM 8GB", category: "Mémoire RAM", price: 280, stock: 22, minStock: 5, realStock: "", status: "Actif" },
+    { id: 16, reference: "PRD-0016", barcode: "6111000000168", name: "Corsair RAM 16GB", category: "Mémoire RAM", price: 620, stock: 13, minStock: 5, realStock: "", status: "Actif" },
+    { id: 17, reference: "PRD-0017", barcode: "6111000000175", name: "TP-Link Archer C6", category: "Routeurs et réseaux", price: 490, stock: 7, minStock: 5, realStock: "", status: "Actif" },
+    { id: 18, reference: "PRD-0018", barcode: "6111000000182", name: "TP-Link USB WiFi", category: "Routeurs et réseaux", price: 160, stock: 19, minStock: 5, realStock: "", status: "Actif" },
+    { id: 19, reference: "PRD-0019", barcode: "6111000000199", name: "Canon Pixma TS3440", category: "Imprimantes", price: 850, stock: 4, minStock: 5, realStock: "", status: "Actif" },
+    { id: 20, reference: "PRD-0020", barcode: "6111000000205", name: "APC Back-UPS 650VA", category: "Onduleurs", price: 950, stock: 6, minStock: 5, realStock: "", status: "Actif" }
   ]);
 
   const [movements, setMovements] = useState([
@@ -116,21 +106,36 @@ function AppContent() {
     return <Login />;
   }
 
-  // Decide which page to really show.
-  // If a Gestionnaire is on a forbidden page, show "Products" instead.
-  // This is calculated during render, so no useEffect is needed.
   const isGestionnaire = user.role === "Gestionnaire";
   const page =
     isGestionnaire && GESTIONNAIRE_FORBIDDEN_PAGES.includes(selected)
       ? "Products"
       : selected;
 
+  const categoriesWithCount = categories.map((category) => ({
+    ...category,
+    productsCount: products.filter(
+      (product) => product.category === category.name
+    ).length
+  }));
+
   function handleSaveProfile(updatedProfile) {
-    setProfile(updatedProfile);
+    updateProfile(updatedProfile);
     setSelected("Profile");
   }
 
   function handleSaveSupplier(updatedSupplier) {
+    const nameUsed = suppliers.some(
+      (supplier) =>
+        supplier.id !== updatedSupplier.id &&
+        supplier.name.toLowerCase() === updatedSupplier.name.toLowerCase()
+    );
+
+    if (nameUsed) {
+      alert("Ce fournisseur existe déjà.");
+      return;
+    }
+
     setSuppliers(
       suppliers.map((supplier) =>
         supplier.id === updatedSupplier.id ? updatedSupplier : supplier
@@ -142,11 +147,36 @@ function AppContent() {
   }
 
   function handleSaveCategory(updatedCategory) {
+    const nameUsed = categories.some(
+      (category) =>
+        category.id !== updatedCategory.id &&
+        category.name.toLowerCase() === updatedCategory.name.toLowerCase()
+    );
+
+    if (nameUsed) {
+      alert("Une catégorie avec ce nom existe déjà.");
+      return;
+    }
+
+    const oldCategory = categories.find(
+      (category) => category.id === updatedCategory.id
+    );
+
     setCategories(
       categories.map((category) =>
         category.id === updatedCategory.id ? updatedCategory : category
       )
     );
+
+    if (oldCategory && oldCategory.name !== updatedCategory.name) {
+      setProducts(
+        products.map((product) =>
+          product.category === oldCategory.name
+            ? { ...product, category: updatedCategory.name }
+            : product
+        )
+      );
+    }
 
     setEditingCategory(null);
     setSelected("Categories");
@@ -160,6 +190,7 @@ function AppContent() {
           setSelected={setSelected}
           products={products}
           setProducts={setProducts}
+          categories={categories}
         />
       )}
 
@@ -167,23 +198,15 @@ function AppContent() {
         <Profile
           selected={page}
           setSelected={setSelected}
-          profile={profile}
+          profile={user}
         />
       )}
 
       {page === "EditProfile" && (
         <EditProfile
-          profile={profile}
+          profile={user}
           setSelected={setSelected}
           onSave={handleSaveProfile}
-        />
-      )}
-
-      {page === "EditProduct" && (
-        <EditProduct
-          product={editingProduct}
-          onCancel={() => setSelected("Products")}
-          onSave={() => setSelected("Products")}
         />
       )}
 
@@ -191,7 +214,7 @@ function AppContent() {
         <Categories
           selected={page}
           setSelected={setSelected}
-          categories={categories}
+          categories={categoriesWithCount}
           setCategories={setCategories}
           onEditCategory={(category) => {
             setEditingCategory(category);
@@ -222,7 +245,7 @@ function AppContent() {
         />
       )}
 
-      {page === "EditSupplier" && (
+      {page === "EditSupplier" && editingSupplier && (
         <EditSupplier
           supplier={editingSupplier}
           selected={page}
@@ -249,6 +272,7 @@ function AppContent() {
           setSelected={setSelected}
           products={products}
           setProducts={setProducts}
+          categories={categories}
         />
       )}
 
@@ -256,6 +280,8 @@ function AppContent() {
         <Dashboard
           selected={page}
           setSelected={setSelected}
+          products={products}
+          movements={movements}
         />
       )}
 

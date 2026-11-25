@@ -1,81 +1,107 @@
-
 import { useState } from "react";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
-import "./EditProfile.css";
+import "./EditProduct.css";
 
-function EditProfile({ profile, setSelected, onSave }) {
-  const [name, setName] = useState(profile.name);
-  const [email, setEmail] = useState(profile.email);
-  const [username, setUsername] = useState(profile.username);
+function EditProduct({ product, categories = [], onCancel, onSave }) {
+  const [name, setName] = useState(product.name || "");
+  const [category, setCategory] = useState(product.category || "");
+  const [price, setPrice] = useState(product.price || "");
+  const [barcode, setBarcode] = useState(product.barcode || "");
+
+  const categoryNames = categories.map((item) => item.name);
+
+  if (category !== "" && !categoryNames.includes(category)) {
+    categoryNames.push(category);
+  }
 
   function handleSubmit(e) {
     e.preventDefault();
 
     if (
       name.trim() === "" ||
-      email.trim() === "" ||
-      username.trim() === ""
+      category.trim() === "" ||
+      price === "" ||
+      barcode.trim() === ""
     ) {
       alert("Veuillez remplir tous les champs.");
       return;
     }
 
+    if (Number(price) < 0) {
+      alert("Le prix ne peut pas être négatif.");
+      return;
+    }
+
+    if (!/^\d{8,13}$/.test(barcode.trim())) {
+      alert("Le code-barres doit contenir entre 8 et 13 chiffres.");
+      return;
+    }
+
     onSave({
-      ...profile,
+      ...product,
       name: name.trim(),
-      email: email.trim(),
-      username: username.trim()
+      category: category.trim(),
+      price: Number(price),
+      barcode: barcode.trim()
     });
   }
 
   return (
-    <>
-      <Navbar />
+    <div className="editproduct">
+      <h1>{product.id ? "Modifier un produit" : "Ajouter un produit"}</h1>
 
-      <div className="content">
-        <Sidebar selected="Profile" setSelected={setSelected} />
+      <form onSubmit={handleSubmit}>
+        <label>Référence</label>
+        <input
+          type="text"
+          value={product.reference || "Générée automatiquement"}
+          disabled
+        />
 
-        <main className="edit-profile">
-          <h1>Modifier mon profil</h1>
-          <p>Modifiez vos informations personnelles.</p>
+        <label>Code-barres</label>
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={13}
+          placeholder="Ex : 6111000000014"
+          value={barcode}
+          onChange={(e) => setBarcode(e.target.value.replace(/\D/g, ""))}
+        />
 
-          <form onSubmit={handleSubmit}>
-            <label>Nom</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+        <label>Nom du produit</label>
+        <input
+          type="text"
+          placeholder="Nom du produit"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+        <label>Catégorie</label>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="">Sélectionner une catégorie</option>
+          {categoryNames.map((categoryName) => (
+            <option key={categoryName} value={categoryName}>
+              {categoryName}
+            </option>
+          ))}
+        </select>
 
-            <label>Nom d'utilisateur</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+        <label>Prix (DH)</label>
+        <input
+          type="number"
+          min="0"
+          placeholder="Prix"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
 
-            <div className="edit-profile-buttons">
-              <button type="submit">Enregistrer</button>
-              <button
-                type="button"
-                onClick={() => setSelected("Profile")}
-              >
-                Annuler
-              </button>
-            </div>
-          </form>
-        </main>
-      </div>
-    </>
+        <button type="submit">Enregistrer</button>
+        <button type="button" onClick={onCancel}>Annuler</button>
+      </form>
+    </div>
   );
 }
 
-export default EditProfile;
+export default EditProduct;

@@ -1,5 +1,8 @@
 nav{
   background-color: #0f1827;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 nav h2{
@@ -7,4 +10,11 @@ nav h2{
   margin: 0;
   font-size: 22px;
   padding: 20px;
+}
+
+.navbar-role{
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 0 20px;
 }

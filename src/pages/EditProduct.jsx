@@ -1,17 +1,45 @@
-
 import { useState } from "react";
 import "./EditProduct.css";
 
-function EditProduct({ product, onCancel, onSave }) {
+function EditProduct({ product, categories = [], onCancel, onSave }) {
   const [name, setName] = useState(product.name || "");
   const [category, setCategory] = useState(product.category || "");
   const [price, setPrice] = useState(product.price || "");
+  const [barcode, setBarcode] = useState(product.barcode || "");
+  const [minStock, setMinStock] = useState(product.minStock ?? "");
+
+  const categoryNames = categories.map((item) => item.name);
+
+  if (category !== "" && !categoryNames.includes(category)) {
+    categoryNames.push(category);
+  }
 
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (name.trim() === "" || category.trim() === "" || price === "") {
+    if (
+      name.trim() === "" ||
+      category.trim() === "" ||
+      price === "" ||
+      barcode.trim() === "" ||
+      minStock === ""
+    ) {
       alert("Veuillez remplir tous les champs.");
+      return;
+    }
+
+    if (Number(price) < 0) {
+      alert("Le prix ne peut pas être négatif.");
+      return;
+    }
+
+    if (Number(minStock) < 0) {
+      alert("Le seuil minimal ne peut pas être négatif.");
+      return;
+    }
+
+    if (!/^\d{8,13}$/.test(barcode.trim())) {
+      alert("Le code-barres doit contenir entre 8 et 13 chiffres.");
       return;
     }
 
@@ -19,7 +47,9 @@ function EditProduct({ product, onCancel, onSave }) {
       ...product,
       name: name.trim(),
       category: category.trim(),
-      price: Number(price)
+      price: Number(price),
+      barcode: barcode.trim(),
+      minStock: Number(minStock)
     });
   }
 
@@ -28,6 +58,23 @@ function EditProduct({ product, onCancel, onSave }) {
       <h1>{product.id ? "Modifier un produit" : "Ajouter un produit"}</h1>
 
       <form onSubmit={handleSubmit}>
+        <label>Référence</label>
+        <input
+          type="text"
+          value={product.reference || "Générée automatiquement"}
+          disabled
+        />
+
+        <label>Code-barres</label>
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={13}
+          placeholder="Ex : 6111000000014"
+          value={barcode}
+          onChange={(e) => setBarcode(e.target.value.replace(/\D/g, ""))}
+        />
+
         <label>Nom du produit</label>
         <input
           type="text"
@@ -37,19 +84,34 @@ function EditProduct({ product, onCancel, onSave }) {
         />
 
         <label>Catégorie</label>
-        <input
-          type="text"
-          placeholder="Catégorie"
+        <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-        />
+        >
+          <option value="">Sélectionner une catégorie</option>
+          {categoryNames.map((categoryName) => (
+            <option key={categoryName} value={categoryName}>
+              {categoryName}
+            </option>
+          ))}
+        </select>
 
         <label>Prix (DH)</label>
         <input
           type="number"
+          min="0"
           placeholder="Prix"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
+        />
+
+        <label>Seuil minimal</label>
+        <input
+          type="number"
+          min="0"
+          placeholder="Ex : 5"
+          value={minStock}
+          onChange={(e) => setMinStock(e.target.value)}
         />
 
         <button type="submit">Enregistrer</button>

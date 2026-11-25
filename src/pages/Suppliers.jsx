@@ -1,9 +1,11 @@
-
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Table from "../components/Table";
 import Searchbar from "../components/Searchbar";
+import Pagination from "../components/Pagination";
+import { useAuth } from "../context/useAuth";
+import "../components/Filters.css";
 import "./Suppliers.css";
 
 const columns = [
@@ -12,15 +14,43 @@ const columns = [
   { title: "Nombre de produits fournis", key: "productsCount" }
 ];
 
+const ITEMS_PER_PAGE = 10;
+
+function sortSuppliers(list, sortBy) {
+  const sorted = [...list];
+
+  if (sortBy === "name-asc") {
+    sorted.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  } else if (sortBy === "name-desc") {
+    sorted.sort((a, b) => b.name.localeCompare(a.name, "fr"));
+  } else if (sortBy === "count-desc") {
+    sorted.sort((a, b) => b.productsCount - a.productsCount);
+  } else if (sortBy === "count-asc") {
+    sorted.sort((a, b) => a.productsCount - b.productsCount);
+  }
+
+  return sorted;
+}
+
 function Suppliers({
   selected,
   setSelected,
-  suppliers,
+  suppliers = [],
   setSuppliers,
   onEditSupplier
 }) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Administrateur";
+
   const [supplierForm, setSupplierForm] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("name-asc");
+  const [page, setPage] = useState(1);
+
+  function changeFilter(setter, value) {
+    setter(value);
+    setPage(1);
+  }
 
   function handleSave(e) {
     e.preventDefault();
@@ -45,7 +75,7 @@ function Suppliers({
     }
 
     const newSupplier = {
-      id: Date.now(),
+      id: Math.max(0, ...suppliers.map((supplier) => supplier.id)) + 1,
       name: supplierForm.name.trim(),
       products: supplierForm.products.trim(),
       productsCount: 0
@@ -61,9 +91,21 @@ function Suppliers({
     );
   }
 
+  const search = searchTerm.toLowerCase();
+
   const filteredSuppliers = suppliers.filter((supplier) =>
-    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.products.toLowerCase().includes(searchTerm.toLowerCase())
+    supplier.name.toLowerCase().includes(search) ||
+    supplier.products.toLowerCase().includes(search)
+  );
+
+  const sortedSuppliers = sortSuppliers(filteredSuppliers, sortBy);
+
+  const totalPages = Math.max(1, Math.ceil(sortedSuppliers.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+
+  const pageSuppliers = sortedSuppliers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   return (
@@ -143,26 +185,52 @@ function Suppliers({
                 </button>
               </div>
 
-              <Searchbar
-                placeholder="Rechercher un fournisseur..."
-                value={searchTerm}
-                onChange={setSearchTerm}
-              />
+              <div className="filters">
+                <Searchbar
+                  placeholder="Rechercher par nom ou type de produits..."
+                  value={searchTerm}
+                  onChange={(value) => changeFilter(setSearchTerm, value)}
+                />
 
-              {suppliers.length > 0 ? (
-                <div className="suppliers-table">
-                  <Table
-                    data={filteredSuppliers}
-                    columns={columns}
-                    onEdit={onEditSupplier}
-                    onDelete={handleDelete}
-                  />
-                </div>
-              ) : (
+                <select
+                  value={sortBy}
+                  onChange={(e) => changeFilter(setSortBy, e.target.value)}
+                >
+                  <option value="name-asc">Nom (A → Z)</option>
+                  <option value="name-desc">Nom (Z → A)</option>
+                  <option value="count-desc">Plus de produits</option>
+                  <option value="count-asc">Moins de produits</option>
+                </select>
+              </div>
+
+              {suppliers.length === 0 ? (
                 <div className="empty">
                   <h2>Aucun fournisseur pour le moment</h2>
                   <p>Cliquez sur le bouton ci-dessus pour ajouter un fournisseur.</p>
                 </div>
+              ) : sortedSuppliers.length === 0 ? (
+                <div className="empty">
+                  <h2>Aucun fournisseur trouvé</h2>
+                  <p>Essayez de modifier votre recherche.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="suppliers-table">
+                    <Table
+                      data={pageSuppliers}
+                      columns={columns}
+                      onEdit={isAdmin ? onEditSupplier : undefined}
+                      onDelete={isAdmin ? handleDelete : undefined}
+                    />
+                  </div>
+
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={sortedSuppliers.length}
+                    onPageChange={setPage}
+                  />
+                </>
               )}
             </>
           )}
@@ -173,4 +241,3 @@ function Suppliers({
 }
 
 export default Suppliers;
-
