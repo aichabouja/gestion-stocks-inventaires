@@ -1,107 +1,108 @@
 import { useState } from "react";
-import "./EditProduct.css";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
+import { useAuth } from "../context/useAuth";
+import "./EditProfile.css";
 
-function EditProduct({ product, categories = [], onCancel, onSave }) {
-  const [name, setName] = useState(product.name || "");
-  const [category, setCategory] = useState(product.category || "");
-  const [price, setPrice] = useState(product.price || "");
-  const [barcode, setBarcode] = useState(product.barcode || "");
+function EditProfile({ profile, setSelected, onSave }) {
+  const { users } = useAuth();
 
-  const categoryNames = categories.map((item) => item.name);
-
-  if (category !== "" && !categoryNames.includes(category)) {
-    categoryNames.push(category);
-  }
+  const [name, setName] = useState(profile.name || "");
+  const [email, setEmail] = useState(profile.email || "");
+  const [username, setUsername] = useState(profile.username || "");
 
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (
-      name.trim() === "" ||
-      category.trim() === "" ||
-      price === "" ||
-      barcode.trim() === ""
-    ) {
+    if (name.trim() === "" || email.trim() === "" || username.trim() === "") {
       alert("Veuillez remplir tous les champs.");
       return;
     }
 
-    if (Number(price) < 0) {
-      alert("Le prix ne peut pas être négatif.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      alert("Veuillez saisir une adresse email valide.");
       return;
     }
 
-    if (!/^\d{8,13}$/.test(barcode.trim())) {
-      alert("Le code-barres doit contenir entre 8 et 13 chiffres.");
+    const usernameUsed = users.some(
+      (item) =>
+        item.id !== profile.id &&
+        item.username.toLowerCase() === username.trim().toLowerCase()
+    );
+
+    if (usernameUsed) {
+      alert("Ce nom d'utilisateur est déjà utilisé.");
+      return;
+    }
+
+    const emailUsed = users.some(
+      (item) =>
+        item.id !== profile.id &&
+        item.email.toLowerCase() === email.trim().toLowerCase()
+    );
+
+    if (emailUsed) {
+      alert("Cette adresse email est déjà utilisée.");
       return;
     }
 
     onSave({
-      ...product,
       name: name.trim(),
-      category: category.trim(),
-      price: Number(price),
-      barcode: barcode.trim()
+      email: email.trim(),
+      username: username.trim()
     });
   }
 
   return (
-    <div className="editproduct">
-      <h1>{product.id ? "Modifier un produit" : "Ajouter un produit"}</h1>
+    <>
+      <Navbar />
 
-      <form onSubmit={handleSubmit}>
-        <label>Référence</label>
-        <input
-          type="text"
-          value={product.reference || "Générée automatiquement"}
-          disabled
-        />
+      <div className="content">
+        <Sidebar selected="Profile" setSelected={setSelected} />
 
-        <label>Code-barres</label>
-        <input
-          type="text"
-          inputMode="numeric"
-          maxLength={13}
-          placeholder="Ex : 6111000000014"
-          value={barcode}
-          onChange={(e) => setBarcode(e.target.value.replace(/\D/g, ""))}
-        />
+        <main className="edit-profile">
+          <h1>Modifier le profil</h1>
+          <p>Modifiez les informations de votre compte</p>
 
-        <label>Nom du produit</label>
-        <input
-          type="text"
-          placeholder="Nom du produit"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+          <form onSubmit={handleSubmit}>
+            <label>Nom</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nom"
+            />
 
-        <label>Catégorie</label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option value="">Sélectionner une catégorie</option>
-          {categoryNames.map((categoryName) => (
-            <option key={categoryName} value={categoryName}>
-              {categoryName}
-            </option>
-          ))}
-        </select>
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+            />
 
-        <label>Prix (DH)</label>
-        <input
-          type="number"
-          min="0"
-          placeholder="Prix"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
+            <label>Nom d'utilisateur</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Nom d'utilisateur"
+            />
 
-        <button type="submit">Enregistrer</button>
-        <button type="button" onClick={onCancel}>Annuler</button>
-      </form>
-    </div>
+            <label>Rôle</label>
+            <input type="text" value={profile.role} disabled />
+
+            <div className="edit-profile-buttons">
+              <button type="submit">Enregistrer</button>
+              <button type="button" onClick={() => setSelected("Profile")}>
+                Annuler
+              </button>
+            </div>
+          </form>
+        </main>
+      </div>
+    </>
   );
 }
 
-export default EditProduct;
+export default EditProfile;

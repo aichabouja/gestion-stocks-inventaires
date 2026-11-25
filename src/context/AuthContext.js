@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
     },
     {
       id: 2,
-      name: "Gestionnaire Demo",
+      name: "Gestionnaire ",
       username: "gestionnaire",
       email: "gestionnaire@example.com",
       password: "gestionnaire123",
