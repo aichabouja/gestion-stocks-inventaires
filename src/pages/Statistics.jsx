@@ -46,6 +46,27 @@ function Statistics({ selected, setSelected, products = [], movements = [] }) {
     };
   });
 
+  const exitsByProduct = {};
+
+  movements
+    .filter((movement) => movement.type === "Sortie")
+    .forEach((movement) => {
+      exitsByProduct[movement.product] =
+        (exitsByProduct[movement.product] || 0) + Number(movement.quantity);
+    });
+
+  const topExits = Object.entries(exitsByProduct)
+    .map(([name, quantity]) => ({ name, quantity }))
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 5);
+
+  const maxExit = Math.max(1, ...topExits.map((item) => item.quantity));
+
+  const lowestStock = products
+    .filter((product) => product.status !== "Inactif")
+    .sort((a, b) => a.stock - b.stock)
+    .slice(0, 5);
+
   const maxValue = Math.max(
     1,
     ...chartData.map((day) => Math.max(day.entries, day.exits))
@@ -161,6 +182,77 @@ function Statistics({ selected, setSelected, products = [], movements = [] }) {
                   <strong>{100 - entryPercentage}%</strong>
                 </p>
               </div>
+            </div>
+          </div>
+
+          <div className="statistics-rankings">
+            <div className="chart-card">
+              <h2>Produits les plus sortis</h2>
+
+              {topExits.length > 0 ? (
+                <div className="ranking-list">
+                  {topExits.map((item, index) => (
+                    <div className="ranking-row" key={item.name}>
+                      <span className="ranking-position">{index + 1}</span>
+
+                      <div className="ranking-info">
+                        <div className="ranking-label">
+                          <span>{item.name}</span>
+                          <strong>{item.quantity}</strong>
+                        </div>
+
+                        <div className="ranking-track">
+                          <div
+                            className="ranking-bar exit-bar"
+                            style={{ width: `${(item.quantity / maxExit) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="no-statistics">Aucune sortie enregistrée.</p>
+              )}
+            </div>
+
+            <div className="chart-card">
+              <h2>Stock le plus faible</h2>
+
+              {lowestStock.length > 0 ? (
+                <div className="ranking-list">
+                  {lowestStock.map((product, index) => {
+                    const minStock = product.minStock ?? 5;
+
+                    return (
+                      <div className="ranking-row" key={product.id}>
+                        <span className="ranking-position">{index + 1}</span>
+
+                        <div className="ranking-info">
+                          <div className="ranking-label">
+                            <span>{product.name}</span>
+                            <strong
+                              className={
+                                product.stock === 0
+                                  ? "stock-danger"
+                                  : product.stock <= minStock
+                                  ? "stock-warning"
+                                  : ""
+                              }
+                            >
+                              {product.stock}
+                            </strong>
+                          </div>
+
+                          <small>Seuil minimal : {minStock}</small>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="no-statistics">Aucun produit.</p>
+              )}
             </div>
           </div>
         </main>

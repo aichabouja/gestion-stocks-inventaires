@@ -1,4 +1,3 @@
-
 .statistics {
   padding: 30px;
   color: white;
@@ -207,12 +206,89 @@
   color: white;
 }
 
+.statistics-rankings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 25px;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ranking-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.ranking-position {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2B405D;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ranking-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ranking-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #C5D0E0;
+  margin-bottom: 6px;
+}
+
+.ranking-label strong {
+  color: white;
+}
+
+.ranking-track {
+  height: 8px;
+  background: #2B405D;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ranking-bar {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.ranking-info small {
+  color: #94A3B8;
+}
+
+.ranking-label .stock-warning {
+  color: #F59E0B;
+}
+
+.ranking-label .stock-danger {
+  color: #EF4444;
+}
+
 @media (max-width: 900px) {
   .statistics-cards {
     grid-template-columns: 1fr;
   }
 
   .statistics-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .statistics-rankings {
     grid-template-columns: 1fr;
   }
 }
