@@ -1,7 +1,12 @@
-
+import { Package, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "./Statistics.css";
+
+function dateToTime(date) {
+  const [day, month, year] = date.split("/");
+  return new Date(year, month - 1, day).getTime();
+}
 
 function Statistics({ selected, setSelected, products = [], movements = [] }) {
   const totalProducts = products.length;
@@ -20,8 +25,8 @@ function Statistics({ selected, setSelected, products = [], movements = [] }) {
     ? Math.round((entries / totalMovements) * 100)
     : 0;
 
-  // Get the five most recent movement dates
   const dates = [...new Set(movements.map((movement) => movement.date))]
+    .sort((a, b) => dateToTime(b) - dateToTime(a))
     .slice(0, 5)
     .reverse();
 
@@ -63,7 +68,9 @@ function Statistics({ selected, setSelected, products = [], movements = [] }) {
 
           <div className="statistics-cards">
             <div className="stat-card">
-              <div className="stat-icon blue">▣</div>
+              <div className="stat-icon blue">
+                <Package size={32} />
+              </div>
               <div>
                 <h2>{totalProducts}</h2>
                 <p>Produits au total</p>
@@ -71,7 +78,9 @@ function Statistics({ selected, setSelected, products = [], movements = [] }) {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon green">↑</div>
+              <div className="stat-icon green">
+                <ArrowDownToLine size={32} />
+              </div>
               <div>
                 <h2>{entries}</h2>
                 <p>Entrées</p>
@@ -79,7 +88,9 @@ function Statistics({ selected, setSelected, products = [], movements = [] }) {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon red">↓</div>
+              <div className="stat-icon red">
+                <ArrowUpFromLine size={32} />
+              </div>
               <div>
                 <h2>{exits}</h2>
                 <p>Sorties</p>

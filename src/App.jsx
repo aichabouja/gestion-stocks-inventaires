@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/useAuth";
+import { NotificationContext } from "./context/NotificationContext";
 
 import EditProfile from "./pages/EditProfile";
 import Products from "./pages/Products";
@@ -15,6 +16,30 @@ import Dashboard from "./pages/Dashboard";
 import Statistics from "./pages/Statistics";
 import Login from "./pages/Login";
 import Users from "./pages/Users";
+import Notifications from "./pages/Notifications";
+
+function getToday() {
+  return new Date().toLocaleDateString("fr-FR");
+}
+
+function isLowStock(product) {
+  return product.status !== "Inactif" && product.stock <= (product.minStock ?? 5);
+}
+
+function createNotification(id, product) {
+  const isEmpty = product.stock === 0;
+
+  return {
+    id,
+    productId: product.id,
+    type: isEmpty ? "danger" : "warning",
+    message: isEmpty
+      ? `« ${product.name} » est en rupture de stock.`
+      : `« ${product.name} » a atteint son seuil minimal (stock : ${product.stock}, seuil : ${product.minStock ?? 5}).`,
+    date: getToday(),
+    read: false
+  };
+}
 
 const GESTIONNAIRE_FORBIDDEN_PAGES = ["Statistics", "Utilisateurs"];
 
@@ -102,6 +127,12 @@ function AppContent() {
     { id: 10, date: "17/11/2026", product: "Corsair RAM 16GB", type: "Sortie", quantity: 2, user: "Gestionnaire" }
   ]);
 
+  const [notifications, setNotifications] = useState(() =>
+    products
+      .filter(isLowStock)
+      .map((product, index) => createNotification(index + 1, product))
+  );
+
   if (!user) {
     return <Login />;
   }
@@ -111,6 +142,49 @@ function AppContent() {
     isGestionnaire && GESTIONNAIRE_FORBIDDEN_PAGES.includes(selected)
       ? "Products"
       : selected;
+
+  const unreadCount = notifications.filter(
+    (notification) => !notification.read
+  ).length;
+
+  function markAllAsRead() {
+    if (unreadCount > 0) {
+      setNotifications(
+        notifications.map((notification) => ({ ...notification, read: true }))
+      );
+    }
+  }
+
+  function clearNotifications() {
+    setNotifications([]);
+  }
+
+  function updateProducts(newProducts) {
+    const productsToNotify = newProducts.filter((product) => {
+      const oldProduct = products.find((item) => item.id === product.id);
+
+      if (!oldProduct || !isLowStock(product)) {
+        return false;
+      }
+
+      const justBecameLow = !isLowStock(oldProduct);
+      const justBecameEmpty = product.stock === 0 && oldProduct.stock !== 0;
+
+      return justBecameLow || justBecameEmpty;
+    });
+
+    setProducts(newProducts);
+
+    if (productsToNotify.length > 0) {
+      const firstId = Math.max(0, ...notifications.map((item) => item.id)) + 1;
+
+      const newNotifications = productsToNotify.map((product, index) =>
+        createNotification(firstId + index, product)
+      );
+
+      setNotifications([...newNotifications, ...notifications]);
+    }
+  }
 
   const categoriesWithCount = categories.map((category) => ({
     ...category,
@@ -183,13 +257,13 @@ function AppContent() {
   }
 
   return (
-    <>
+    <NotificationContext.Provider value={{ unreadCount, markAllAsRead }}>
       {page === "Products" && (
         <Products
           selected={page}
           setSelected={setSelected}
           products={products}
-          setProducts={setProducts}
+          setProducts={updateProducts}
           categories={categories}
         />
       )}
@@ -260,7 +334,7 @@ function AppContent() {
           selected={page}
           setSelected={setSelected}
           products={products}
-          setProducts={setProducts}
+          setProducts={updateProducts}
           movements={movements}
           setMovements={setMovements}
         />
@@ -271,7 +345,7 @@ function AppContent() {
           selected={page}
           setSelected={setSelected}
           products={products}
-          setProducts={setProducts}
+          setProducts={updateProducts}
           categories={categories}
         />
       )}
@@ -282,6 +356,15 @@ function AppContent() {
           setSelected={setSelected}
           products={products}
           movements={movements}
+        />
+      )}
+
+      {page === "Notifications" && (
+        <Notifications
+          selected={page}
+          setSelected={setSelected}
+          notifications={notifications}
+          onClear={clearNotifications}
         />
       )}
 
@@ -302,7 +385,7 @@ function AppContent() {
           setUsers={setUsers}
         />
       )}
-    </>
+    </NotificationContext.Provider>
   );
 }
 

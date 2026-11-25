@@ -13,7 +13,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  
+
 }
 .sidebar li{
   padding-bottom: 50px;
@@ -27,4 +27,19 @@
 }
 .sidebar li.active{
   background-color: #26344d;
+}
+.sidebar-badge{
+  display: inline-block;
+  margin-left: 10px;
+  min-width: 20px;
+  height: 20px;
+  line-height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background-color: #EF4444;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  box-sizing: border-box;
 }

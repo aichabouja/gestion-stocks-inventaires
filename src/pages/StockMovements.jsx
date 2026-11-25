@@ -99,13 +99,15 @@ function StockMovements({
 
     setMovements([newMovement, ...movements]);
 
+    const newStock =
+      type === "Entrée"
+        ? selectedProduct.stock + amount
+        : selectedProduct.stock - amount;
+
     setProducts(
       products.map((item) =>
         item.id === selectedProduct.id
-          ? {
-              ...item,
-              stock: type === "Entrée" ? item.stock + amount : item.stock - amount
-            }
+          ? { ...item, stock: newStock }
           : item
       )
     );
