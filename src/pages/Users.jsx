@@ -12,7 +12,6 @@ function Users({ selected, setSelected, users = [], refresh }) {
   const [roleFilter, setRoleFilter] = useState("Tous");
 
   const emptyForm = {
-    name: "",
     username: "",
     email: "",
     password: "",
@@ -31,7 +30,6 @@ function Users({ selected, setSelected, users = [], refresh }) {
   function openEditForm(user) {
     setEditingUser(user);
     setForm({
-      name: user.name,
       username: user.username,
       email: user.email,
       password: "",
@@ -54,7 +52,6 @@ function Users({ selected, setSelected, users = [], refresh }) {
     e.preventDefault();
 
     if (
-      !form.name.trim() ||
       !form.username.trim() ||
       !form.email.trim()
     ) {
@@ -67,13 +64,17 @@ function Users({ selected, setSelected, users = [], refresh }) {
       return;
     }
 
+    if (form.password && form.password.length < 7) {
+      alert("Le mot de passe doit contenir au moins 7 caractères.");
+      return;
+    }
+
     if (form.password && form.password !== form.confirmPassword) {
       alert("Les mots de passe ne correspondent pas.");
       return;
     }
 
     const body = {
-      name: form.name.trim(),
       username: form.username.trim(),
       email: form.email.trim(),
       role: form.role,
@@ -122,7 +123,6 @@ function Users({ selected, setSelected, users = [], refresh }) {
 
     try {
       await api("PUT", `/users/${id}`, {
-        name: user.name,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -138,7 +138,6 @@ function Users({ selected, setSelected, users = [], refresh }) {
     const searchValue = search.toLowerCase();
 
     const matchesSearch =
-      user.name.toLowerCase().includes(searchValue) ||
       user.username.toLowerCase().includes(searchValue) ||
       user.email.toLowerCase().includes(searchValue);
 
@@ -211,7 +210,6 @@ function Users({ selected, setSelected, users = [], refresh }) {
               <table className="users-table">
                 <thead>
                   <tr>
-                    <th>Nom</th>
                     <th>Nom d'utilisateur</th>
                     <th>Email</th>
                     <th>Rôle</th>
@@ -224,7 +222,6 @@ function Users({ selected, setSelected, users = [], refresh }) {
                   {filteredUsers.length > 0 ? (
                     filteredUsers.map((user) => (
                       <tr key={user.id}>
-                        <td>{user.name}</td>
                         <td>{user.username}</td>
                         <td>{user.email}</td>
 
@@ -280,7 +277,7 @@ function Users({ selected, setSelected, users = [], refresh }) {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="no-users">
+                      <td colSpan="5" className="no-users">
                         Aucun utilisateur trouvé.
                       </td>
                     </tr>
@@ -309,20 +306,11 @@ function Users({ selected, setSelected, users = [], refresh }) {
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                  <label>Nom complet</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    placeholder="Nom complet"
-                    required
-                  />
-
                   <label>Nom d'utilisateur</label>
                   <input
                     type="text"
                     name="username"
+                    autoComplete="off"
                     value={form.username}
                     onChange={handleChange}
                     placeholder="Nom d'utilisateur"
@@ -347,6 +335,7 @@ function Users({ selected, setSelected, users = [], refresh }) {
                   <input
                     type="password"
                     name="password"
+                    autoComplete="new-password"
                     value={form.password}
                     onChange={handleChange}
                     placeholder="Mot de passe"
@@ -357,6 +346,7 @@ function Users({ selected, setSelected, users = [], refresh }) {
                   <input
                     type="password"
                     name="confirmPassword"
+                    autoComplete="new-password"
                     value={form.confirmPassword}
                     onChange={handleChange}
                     placeholder="Confirmer le mot de passe"

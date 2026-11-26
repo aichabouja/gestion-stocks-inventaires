@@ -17,8 +17,8 @@ function ChangePassword({ setSelected }) {
       return;
     }
 
-    if (password.length < 6) {
-      alert("Le nouveau mot de passe doit contenir au moins 6 caractères.");
+    if (password.length < 7) {
+      alert("Le nouveau mot de passe doit contenir au moins 7 caractères.");
       return;
     }
 
@@ -61,7 +61,7 @@ function ChangePassword({ setSelected }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Au moins 6 caractères"
+              placeholder="Au moins 7 caractères"
             />
 
             <label>Confirmer le nouveau mot de passe</label>
