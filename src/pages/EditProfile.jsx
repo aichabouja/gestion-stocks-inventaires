@@ -1,12 +1,9 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import { useAuth } from "../context/useAuth";
 import "./EditProfile.css";
 
 function EditProfile({ profile, setSelected, onSave }) {
-  const { users } = useAuth();
-
   const [name, setName] = useState(profile.name || "");
   const [email, setEmail] = useState(profile.email || "");
   const [username, setUsername] = useState(profile.username || "");
@@ -21,28 +18,6 @@ function EditProfile({ profile, setSelected, onSave }) {
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       alert("Veuillez saisir une adresse email valide.");
-      return;
-    }
-
-    const usernameUsed = users.some(
-      (item) =>
-        item.id !== profile.id &&
-        item.username.toLowerCase() === username.trim().toLowerCase()
-    );
-
-    if (usernameUsed) {
-      alert("Ce nom d'utilisateur est déjà utilisé.");
-      return;
-    }
-
-    const emailUsed = users.some(
-      (item) =>
-        item.id !== profile.id &&
-        item.email.toLowerCase() === email.trim().toLowerCase()
-    );
-
-    if (emailUsed) {
-      alert("Cette adresse email est déjà utilisée.");
       return;
     }
 

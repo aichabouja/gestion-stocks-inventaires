@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Searchbar from "../components/Searchbar";
 import Pagination from "../components/Pagination";
+import { api } from "../api";
 import "../components/Filters.css";
 import "./Inventory.css";
 
@@ -39,7 +40,8 @@ function Inventory({
   setSelected,
   products = [],
   setProducts,
-  categories = []
+  categories = [],
+  refresh
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Toutes");
@@ -63,6 +65,38 @@ function Inventory({
           : product
       )
     );
+  }
+
+  const countedProducts = products.filter(
+    (product) => product.status !== "Inactif" && product.realStock !== ""
+  );
+
+  async function handleApply() {
+    if (countedProducts.length === 0) {
+      alert("Saisissez le stock réel d'au moins un produit.");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        `Mettre à jour le stock de ${countedProducts.length} produit(s) avec les quantités réelles ?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await api("POST", "/inventory/apply", {
+        counts: countedProducts.map((product) => ({
+          productId: product.id,
+          realStock: Number(product.realStock)
+        }))
+      });
+      await refresh();
+      alert("Le stock a été mis à jour.");
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   const search = searchTerm.toLowerCase();
@@ -204,6 +238,12 @@ function Inventory({
                 totalItems={filteredProducts.length}
                 onPageChange={setPage}
               />
+
+              <div className="inventorybuttons">
+                <button onClick={handleApply}>
+                  Valider l'inventaire ({countedProducts.length})
+                </button>
+              </div>
             </>
           ) : (
             <div className="empty">

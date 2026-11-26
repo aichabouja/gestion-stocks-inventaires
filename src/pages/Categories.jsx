@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import Table from "../components/Table";
 import Searchbar from "../components/Searchbar";
 import Pagination from "../components/Pagination";
+import { api } from "../api";
 import "../components/Filters.css";
 import "./Categories.css";
 
@@ -34,7 +35,7 @@ function Categories({
   selected,
   setSelected,
   categories = [],
-  setCategories,
+  refresh,
   onEditCategory
 }) {
   const [categoryForm, setCategoryForm] = useState(null);
@@ -48,7 +49,7 @@ function Categories({
     setPage(1);
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
 
     if (categoryForm.name.trim() === "") {
@@ -56,24 +57,13 @@ function Categories({
       return;
     }
 
-    const alreadyExists = categories.some(
-      (category) =>
-        category.name.toLowerCase() === categoryForm.name.trim().toLowerCase()
-    );
-
-    if (alreadyExists) {
-      alert("Cette catégorie existe déjà.");
-      return;
+    try {
+      await api("POST", "/categories", { name: categoryForm.name.trim() });
+      await refresh();
+      setCategoryForm(null);
+    } catch (error) {
+      alert(error.message);
     }
-
-    const newCategory = {
-      id: Math.max(0, ...categories.map((category) => category.id)) + 1,
-      name: categoryForm.name.trim(),
-      productsCount: 0
-    };
-
-    setCategories([...categories, newCategory]);
-    setCategoryForm(null);
   }
 
   function getDeleteError(category) {
@@ -84,8 +74,13 @@ function Categories({
     return null;
   }
 
-  function handleDelete(id) {
-    setCategories(categories.filter((item) => item.id !== id));
+  async function handleDelete(id) {
+    try {
+      await api("DELETE", `/categories/${id}`);
+      await refresh();
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   const filteredCategories = categories.filter((category) => {

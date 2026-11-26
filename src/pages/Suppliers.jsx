@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import Table from "../components/Table";
 import Searchbar from "../components/Searchbar";
 import Pagination from "../components/Pagination";
+import { api } from "../api";
 import { useAuth } from "../context/useAuth";
 import "../components/Filters.css";
 import "./Suppliers.css";
@@ -36,7 +37,7 @@ function Suppliers({
   selected,
   setSelected,
   suppliers = [],
-  setSuppliers,
+  refresh,
   onEditSupplier
 }) {
   const { user } = useAuth();
@@ -52,7 +53,7 @@ function Suppliers({
     setPage(1);
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
 
     if (
@@ -63,32 +64,25 @@ function Suppliers({
       return;
     }
 
-    const alreadyExists = suppliers.some(
-      (supplier) =>
-        supplier.name.toLowerCase() ===
-        supplierForm.name.trim().toLowerCase()
-    );
-
-    if (alreadyExists) {
-      alert("Ce fournisseur existe déjà.");
-      return;
+    try {
+      await api("POST", "/suppliers", {
+        name: supplierForm.name.trim(),
+        products: supplierForm.products.trim()
+      });
+      await refresh();
+      setSupplierForm(null);
+    } catch (error) {
+      alert(error.message);
     }
-
-    const newSupplier = {
-      id: Math.max(0, ...suppliers.map((supplier) => supplier.id)) + 1,
-      name: supplierForm.name.trim(),
-      products: supplierForm.products.trim(),
-      productsCount: 0
-    };
-
-    setSuppliers([...suppliers, newSupplier]);
-    setSupplierForm(null);
   }
 
-  function handleDelete(id) {
-    setSuppliers(
-      suppliers.filter((supplier) => supplier.id !== id)
-    );
+  async function handleDelete(id) {
+    try {
+      await api("DELETE", `/suppliers/${id}`);
+      await refresh();
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   const search = searchTerm.toLowerCase();

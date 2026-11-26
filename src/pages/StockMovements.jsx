@@ -5,6 +5,7 @@ import Searchbar from "../components/Searchbar";
 import Table from "../components/Table";
 import Pagination from "../components/Pagination";
 import { useAuth } from "../context/useAuth";
+import { api } from "../api";
 import "../components/Filters.css";
 import "./StockMovements.css";
 
@@ -23,21 +24,12 @@ function dateToTime(date) {
 
 const ITEMS_PER_PAGE = 10;
 
-function getNextId(list) {
-  return Math.max(0, ...list.map((item) => item.id)) + 1;
-}
-
-function getToday() {
-  return new Date().toLocaleDateString("fr-FR");
-}
-
 function StockMovements({
   selected,
   setSelected,
   products = [],
-  setProducts,
   movements = [],
-  setMovements
+  refresh
 }) {
   const { user } = useAuth();
 
@@ -62,9 +54,9 @@ function StockMovements({
     (item) => item.status !== "Inactif"
   );
 
-  function handleAdd() {
+  async function handleAdd() {
     if (
-      product.trim() === "" ||
+      product === "" ||
       quantity === "" ||
       Number(quantity) <= 0
     ) {
@@ -72,47 +64,17 @@ function StockMovements({
       return;
     }
 
-    const selectedProduct = activeProducts.find((item) => item.name === product);
-
-    if (!selectedProduct) {
-      alert("Produit introuvable.");
-      return;
+    try {
+      await api("POST", "/stock-movements", {
+        productId: Number(product),
+        type,
+        quantity: Number(quantity)
+      });
+      await refresh();
+      handleCancel();
+    } catch (error) {
+      alert(error.message);
     }
-
-    const amount = Number(quantity);
-
-    if (type === "Sortie" && amount > selectedProduct.stock) {
-      alert(
-        `Stock insuffisant. Stock disponible : ${selectedProduct.stock}`
-      );
-      return;
-    }
-
-    const newMovement = {
-      id: getNextId(movements),
-      date: getToday(),
-      product,
-      type,
-      quantity: amount,
-      user: currentUser
-    };
-
-    setMovements([newMovement, ...movements]);
-
-    const newStock =
-      type === "Entrée"
-        ? selectedProduct.stock + amount
-        : selectedProduct.stock - amount;
-
-    setProducts(
-      products.map((item) =>
-        item.id === selectedProduct.id
-          ? { ...item, stock: newStock }
-          : item
-      )
-    );
-
-    handleCancel();
   }
 
   function handleCancel() {
@@ -171,7 +133,7 @@ function StockMovements({
                 >
                   <option value="">Sélectionner un produit</option>
                   {activeProducts.map((item) => (
-                    <option key={item.id} value={item.name}>
+                    <option key={item.id} value={item.id}>
                       {item.name} (stock : {item.stock})
                     </option>
                   ))}

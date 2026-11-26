@@ -1,78 +1,63 @@
-import { createContext, useState, createElement } from "react";
+import { createContext, useState, useEffect, createElement } from "react";
+import { api, getToken, setToken } from "../api";
 
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(() => Boolean(getToken()));
 
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "Administrateur",
-      username: "admin",
-      email: "admin@example.com",
-      password: "admin123",
-      role: "Administrateur",
-      status: "Actif"
-    },
-    {
-      id: 2,
-      name: "Gestionnaire ",
-      username: "gestionnaire",
-      email: "gestionnaire@example.com",
-      password: "gestionnaire123",
-      role: "Gestionnaire",
-      status: "Actif"
-    }
-  ]);
-
-  function login(username, password) {
-    const account = users.find(
-      (item) =>
-        (item.username.toLowerCase() === username.toLowerCase() ||
-          item.email.toLowerCase() === username.toLowerCase()) &&
-        item.password === password &&
-        item.status === "Actif"
-    );
-
-    if (!account) {
-      return false;
+  useEffect(() => {
+    if (!getToken()) {
+      return;
     }
 
-    const userInfo = { ...account };
-    delete userInfo.password;
+    let ignore = false;
 
-    setUser(userInfo);
-    return true;
+    api("GET", "/me")
+      .then((response) => {
+        if (!ignore) {
+          setUser(response.data);
+        }
+      })
+      .catch(() => {
+        setToken(null);
+      })
+      .finally(() => {
+        if (!ignore) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  async function login(username, password) {
+    try {
+      const response = await api("POST", "/login", {
+        login: username.trim(),
+        password
+      });
+
+      setToken(response.token);
+      setUser(response.user);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, message: error.message };
+    }
   }
 
-  function updateProfile(updatedInfo) {
-    const { password, ...infoWithoutPassword } = updatedInfo;
-
-    setUsers(
-      users.map((item) =>
-        item.id === user.id
-          ? {
-              ...item,
-              ...infoWithoutPassword,
-              ...(password ? { password } : {}),
-              role: item.role,
-              status: item.status
-            }
-          : item
-      )
-    );
-
-    setUser({
-      ...user,
-      ...infoWithoutPassword,
-      role: user.role,
-      status: user.status
-    });
-  }
-
-  function logout() {
+  async function logout() {
+    await api("POST", "/logout").catch(() => null);
+    setToken(null);
     setUser(null);
+  }
+
+  async function updateProfile(info) {
+    const response = await api("PUT", "/profile", info);
+    setUser(response.data);
   }
 
   return createElement(
@@ -80,8 +65,7 @@ export function AuthProvider({ children }) {
     {
       value: {
         user,
-        users,
-        setUsers,
+        loading,
         login,
         logout,
         updateProfile

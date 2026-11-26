@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import Table from "../components/Table";
 import EditProduct from "./EditProduct";
 import Searchbar from "../components/Searchbar";
+import { api } from "../api";
 import Pagination from "../components/Pagination";
 import "../components/Filters.css";
 import "./Products.css";
@@ -30,16 +31,6 @@ const columns = [
     )
   }
 ];
-
-function generateReference(products) {
-  const numbers = products.map((product) =>
-    Number(String(product.reference || "").replace("PRD-", "")) || 0
-  );
-
-  const nextNumber = Math.max(0, ...numbers) + 1;
-
-  return `PRD-${String(nextNumber).padStart(4, "0")}`;
-}
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -75,7 +66,7 @@ function sortProducts(list, sortBy) {
   return sorted;
 }
 
-function Products({ selected, setSelected, products = [], setProducts, categories = [] }) {
+function Products({ selected, setSelected, products = [], categories = [], refresh }) {
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Toutes");
@@ -88,60 +79,45 @@ function Products({ selected, setSelected, products = [], setProducts, categorie
     setPage(1);
   }
 
-  function handleSave(updatedProduct) {
-    const barcodeUsed = products.some(
-      (product) =>
-        product.barcode === updatedProduct.barcode &&
-        product.id !== updatedProduct.id
-    );
+  async function handleSave(updatedProduct) {
+    const body = {
+      barcode: updatedProduct.barcode,
+      name: updatedProduct.name,
+      category: updatedProduct.category,
+      price: updatedProduct.price,
+      minStock: updatedProduct.minStock
+    };
 
-    if (barcodeUsed) {
-      alert("Ce code-barres est déjà utilisé par un autre produit.");
-      return;
+    try {
+      if (updatedProduct.id) {
+        await api("PUT", `/products/${updatedProduct.id}`, body);
+      } else {
+        await api("POST", "/products", body);
+      }
+
+      await refresh();
+      setEditingProduct(null);
+    } catch (error) {
+      alert(error.message);
     }
-
-    if (updatedProduct.id) {
-      setProducts(products.map((product) =>
-        product.id === updatedProduct.id
-          ? {
-              ...product,
-              ...updatedProduct,
-              reference: product.reference,
-              stock: product.stock,
-              realStock: product.realStock
-            }
-          : product
-      ));
-    } else {
-      setProducts([
-        ...products,
-        {
-          ...updatedProduct,
-          id: Math.max(0, ...products.map((product) => product.id)) + 1,
-          reference: generateReference(products),
-          stock: 0,
-          realStock: "",
-          status: "Actif"
-        }
-      ]);
-    }
-
-    setEditingProduct(null);
   }
 
-  function handleToggleStatus(id) {
-    setProducts(products.map((product) =>
-      product.id === id
-        ? {
-            ...product,
-            status: product.status === "Inactif" ? "Actif" : "Inactif"
-          }
-        : product
-    ));
+  async function handleToggleStatus(id) {
+    try {
+      await api("PATCH", `/products/${id}/status`);
+      await refresh();
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
-  function handleDelete(id) {
-    setProducts(products.filter((product) => product.id !== id));
+  async function handleDelete(id) {
+    try {
+      await api("DELETE", `/products/${id}`);
+      await refresh();
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   const search = searchTerm.toLowerCase();

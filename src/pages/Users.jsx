@@ -2,9 +2,10 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import { api } from "../api";
 import "./Users.css";
 
-function Users({ selected, setSelected, users, setUsers }) {
+function Users({ selected, setSelected, users = [], refresh }) {
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [search, setSearch] = useState("");
@@ -49,7 +50,7 @@ function Users({ selected, setSelected, users, setUsers }) {
     });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     if (
@@ -71,87 +72,66 @@ function Users({ selected, setSelected, users, setUsers }) {
       return;
     }
 
-    const emailExists = users.some(
-      (user) =>
-        user.email.toLowerCase() === form.email.trim().toLowerCase() &&
-        user.id !== editingUser?.id
-    );
+    const body = {
+      name: form.name.trim(),
+      username: form.username.trim(),
+      email: form.email.trim(),
+      role: form.role,
+      status: editingUser ? editingUser.status : "Actif"
+    };
 
-    const usernameExists = users.some(
-      (user) =>
-        user.username.toLowerCase() === form.username.trim().toLowerCase() &&
-        user.id !== editingUser?.id
-    );
-
-    if (emailExists) {
-      alert("Cette adresse email existe déjà.");
-      return;
+    if (form.password) {
+      body.password = form.password;
     }
 
-    if (usernameExists) {
-      alert("Ce nom d'utilisateur existe déjà.");
-      return;
-    }
-
-    if (editingUser) {
-      const updatedUser = {
-        ...editingUser,
-        name: form.name.trim(),
-        username: form.username.trim(),
-        email: form.email.trim(),
-        role: form.role
-      };
-
-      // Le mot de passe ne change que si un nouveau est saisi.
-      if (form.password) {
-        updatedUser.password = form.password;
+    try {
+      if (editingUser) {
+        await api("PUT", `/users/${editingUser.id}`, body);
+      } else {
+        await api("POST", "/users", body);
       }
 
-      setUsers(
-        users.map((user) =>
-          user.id === editingUser.id ? updatedUser : user
-        )
-      );
-    } else {
-      const newUser = {
-        id: Date.now(),
-        name: form.name.trim(),
-        username: form.username.trim(),
-        email: form.email.trim(),
-        password: form.password,
-        role: form.role,
-        status: "Actif"
-      };
-
-      setUsers([...users, newUser]);
+      await refresh();
+      setShowForm(false);
+      setForm(emptyForm);
+      setEditingUser(null);
+    } catch (error) {
+      alert(error.message);
     }
-
-    setShowForm(false);
-    setForm(emptyForm);
-    setEditingUser(null);
   }
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     const confirmed = window.confirm(
       "Voulez-vous vraiment supprimer cet utilisateur ?"
     );
 
-    if (confirmed) {
-      setUsers(users.filter((user) => user.id !== id));
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await api("DELETE", `/users/${id}`);
+      await refresh();
+    } catch (error) {
+      alert(error.message);
     }
   }
 
-  function toggleStatus(id) {
-    setUsers(
-      users.map((user) =>
-        user.id === id
-          ? {
-              ...user,
-              status: user.status === "Actif" ? "Inactif" : "Actif"
-            }
-          : user
-      )
-    );
+  async function toggleStatus(id) {
+    const user = users.find((item) => item.id === id);
+
+    try {
+      await api("PUT", `/users/${id}`, {
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        status: user.status === "Actif" ? "Inactif" : "Actif"
+      });
+      await refresh();
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   const filteredUsers = users.filter((user) => {

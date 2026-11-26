@@ -1,9 +1,12 @@
 
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import { useAuth } from "../context/useAuth";
 import "./Profile.css";
 
 function Profile({ selected, setSelected, profile }) {
+  const { logout } = useAuth();
+
   return (
     <>
       <Navbar />
@@ -30,13 +33,16 @@ function Profile({ selected, setSelected, profile }) {
               Modifier le profil
             </button>
 
-            <button className="changepswd">
+            <button
+              className="changepswd"
+              onClick={() => setSelected("ChangePassword")}
+            >
               Changer le mot de passe
             </button>
           </div>
 
           <div className="logout">
-            <button className="logoutbtn">Déconnexion</button>
+            <button className="logoutbtn" onClick={logout}>Déconnexion</button>
           </div>
         </main>
       </div>

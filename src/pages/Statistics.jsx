@@ -72,6 +72,14 @@ function Statistics({ selected, setSelected, products = [], movements = [] }) {
     ...chartData.map((day) => Math.max(day.entries, day.exits))
   );
 
+  function barHeight(value) {
+    if (value === 0) {
+      return "0%";
+    }
+
+    return `${Math.max(5, (value / maxValue) * 85)}%`;
+  }
+
   return (
     <>
       <Navbar />
@@ -133,17 +141,27 @@ function Statistics({ selected, setSelected, products = [], movements = [] }) {
                   chartData.map((day) => (
                     <div className="chart-column" key={day.date}>
                       <div className="bars">
-                        <div
-                          className="bar entry-bar"
-                          style={{ height: `${(day.entries / maxValue) * 100}%` }}
-                          title={`Entrées : ${day.entries}`}
-                        ></div>
+                        <div className="bar-wrapper">
+                          {day.entries > 0 && (
+                            <span className="bar-value">{day.entries}</span>
+                          )}
+                          <div
+                            className="bar entry-bar"
+                            style={{ height: barHeight(day.entries) }}
+                            title={`Entrées : ${day.entries}`}
+                          ></div>
+                        </div>
 
-                        <div
-                          className="bar exit-bar"
-                          style={{ height: `${(day.exits / maxValue) * 100}%` }}
-                          title={`Sorties : ${day.exits}`}
-                        ></div>
+                        <div className="bar-wrapper">
+                          {day.exits > 0 && (
+                            <span className="bar-value">{day.exits}</span>
+                          )}
+                          <div
+                            className="bar exit-bar"
+                            style={{ height: barHeight(day.exits) }}
+                            title={`Sorties : ${day.exits}`}
+                          ></div>
+                        </div>
                       </div>
 
                       <span>{day.date}</span>

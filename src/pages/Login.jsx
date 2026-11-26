@@ -10,14 +10,18 @@ function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setError("");
+    setSubmitting(true);
 
-    const success = login(username, password);
+    const result = await login(username, password);
 
-    if (!success) {
-      setError("Username or password is incorrect.");
+    if (!result.ok) {
+      setError(result.message);
+      setSubmitting(false);
     }
   }
 
@@ -47,7 +51,9 @@ function Login() {
 
           {error && <p className="loginerror">{error}</p>}
 
-          <button type="submit">Login</button>
+          <button type="submit" disabled={submitting}>
+            {submitting ? "Connexion..." : "Login"}
+          </button>
         </form>
       </div>
     </div>
